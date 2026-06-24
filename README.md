@@ -1,119 +1,77 @@
-# 🛡️ Web Güvenliği Analizi ve Olay Müdahale
+# 🛡️ Web Güvenliği Analizi ve Olay Müdahale (Staj Projesi)
 
-Bu repository, staj süreci boyunca geliştirilen **Web Güvenliği Analizi ve Olay Müdahale** projesini içermektedir.
+## 📌 Proje Hakkında
 
-Proje kapsamında web logları ve güvenlik olayları analiz edilerek şüpheli aktivitelerin tespit edilmesi, saldırı senaryolarının incelenmesi ve bu olaylara yönelik temel incident response (olay müdahale) yaklaşımının uygulanması hedeflenmektedir.
+Bu proje, staj süreci kapsamında geliştirilmiş bir **web güvenliği analizi ve olay müdahale (incident response)** çalışmasıdır.
 
----
-
-## 🎯 Proje Amacı
-
-Bu projenin temel amacı:
-
-- Web uygulamalarında oluşan güvenlik olaylarını analiz etmek
-- Log kayıtları üzerinden şüpheli aktiviteleri tespit etmek
-- Temel saldırı türlerini (brute force, unauthorized access vb.) incelemek
-- Incident response mantığını simüle etmek
-- Güvenlik analizi için basit bir otomasyon sistemi geliştirmek
+Projenin temel amacı, web sunucularından elde edilen log kayıtları üzerinden güvenlik olaylarını analiz etmek, şüpheli aktiviteleri tespit etmek ve bu aktivitelerin olası saldırı senaryolarını değerlendirmektir.
 
 ---
 
-## 🧠 Kapsam
+## 🎯 Projenin Amacı
 
-Bu proje aşağıdaki alanları kapsamaktadır:
+Bu projenin temel amacı, gerçek dünya siber güvenlik süreçlerine benzer şekilde:
 
-- Web server log analizi
-- IP bazlı trafik analizi
-- Failed login (401) tespiti
-- Şüpheli davranış analizi
-- Basit saldırı senaryolarının simülasyonu
-- Python ile veri işleme ve analiz
-
----
-
-## 🛠️ Kullanılan Teknolojiler
-
-- Python 3
-- Git & GitHub
-- Log analiz mantığı
-- CLI tabanlı geliştirme
-- Temel siber güvenlik prensipleri
+- Web tabanlı sistemlerde oluşabilecek güvenlik olaylarını analiz etmek
+- Sunucu log kayıtları üzerinden anormal davranışları tespit etmek
+- Şüpheli IP adreslerini belirlemek ve sınıflandırmak
+- Brute force gibi temel saldırı türlerinin davranışlarını incelemek
+- Incident response (olay müdahale) mantığını temel seviyede uygulamak
+- Log analizi üzerinden güvenlik farkındalığı geliştirmek
 
 ---
 
-## 📁 Proje Yapısı
-web-guvenligi-analizi-ve-olay-mudahale/
-│
-├── logs/
-│ └── sample_access.log
-│
-├── scripts/
-│ └── log_analyzer.py
-│
-├── Daily_Reports/
-│ ├── 1_Gun_22_06_2026.md
-│ ├── 2_Gun_23_06_2026.md
-│ └── 3_Gun_24_06_2026.md
-│
-└── README.md
+## 🧠 Proje Yaklaşımı
+
+Proje, tamamen log tabanlı analiz yaklaşımı üzerine kurulmuştur. Bu yaklaşımda:
+
+- Sistem tarafından üretilen HTTP logları incelenir
+- IP adreslerinin davranışları analiz edilir
+- Başarısız giriş denemeleri tespit edilir
+- Şüpheli trafik örüntüleri belirlenir
+- Elde edilen bulgular güvenlik açısından yorumlanır
+
+Bu sayede temel bir **Security Operations (SOC) mantığı** simüle edilmiştir.
 
 ---
 
-## ⚙️ Sistem Özellikleri
+## 🔐 Kapsanan Güvenlik Konuları
 
-- IP adreslerine göre istek analizi
-- Başarısız giriş denemelerinin tespiti
-- Şüpheli IP davranışlarının belirlenmesi
-- Log dosyası üzerinden saldırı analizi
-- Basit incident detection mantığı
+Proje aşağıdaki temel web güvenliği konularına odaklanmaktadır:
 
----
-
-## 🧪 Çalışma Mantığı
-
-1. Web server log dosyası okunur
-2. IP adresleri analiz edilir
-3. HTTP status kodları incelenir
-4. Başarısız girişler tespit edilir (401)
-5. Şüpheli IP’ler raporlanır
-6. Olası brute force saldırıları işaretlenir
+- Web uygulama güvenliği temelleri
+- HTTP protokolü davranış analizi
+- Brute force saldırı mantığı
+- Yetkisiz erişim girişimleri
+- Log analizi ile tehdit tespiti
+- Incident response süreçlerinin temel mantığı
 
 ---
 
-## 📊 Örnek Çıktı
+## 🛠️ Kullanılan Teknolojiler ve Yöntemler
 
-=== IP TRAFFIC ANALYSIS ===
-192.168.1.10 -> 3 request
-192.168.1.11 -> 2 request
-
-=== SUSPECT IPs ===
-192.168.1.11 -> POSSIBLE BRUTE FORCE ATTACK
-
+- Python 3 ile veri işleme ve analiz
+- Log parsing (metin tabanlı veri analizi)
+- Git & GitHub versiyon kontrolü
+- CLI (komut satırı) tabanlı geliştirme yaklaşımı
+- Temel siber güvenlik analiz teknikleri
 
 ---
 
-## 📅 Staj Süreci (Özet)
+## 📈 Projenin Katkısı
 
-Proje, 30 günlük staj planı kapsamında geliştirilmiştir.
+Bu proje sayesinde:
 
-İlk 3 gün içerisinde:
-
-- Proje yapısı oluşturulmuştur
-- Web güvenliği temel kavramları incelenmiştir
-- Log analizi için temel sistem kurulmuştur
-
----
-
-## 🚀 Gelecek Geliştirmeler
-
-- Grafik tabanlı saldırı analiz dashboard’u
-- Flask tabanlı web arayüzü
-- Gerçek zamanlı log izleme sistemi
-- SIEM benzeri gelişmiş analiz sistemi
-- Otomatik raporlama sistemi
+- Web güvenlik olaylarının nasıl analiz edildiği öğrenilmiştir
+- Log verilerinin güvenlik açısından önemi anlaşılmıştır
+- Şüpheli davranışların nasıl tespit edildiği simüle edilmiştir
+- Incident response sürecinin temel mantığı kavranmıştır
+- Gerçek dünya SOC süreçlerine giriş seviyesi bir bakış sağlanmıştır
 
 ---
 
-## 👨‍💻 Not
+## 📌 Genel Değerlendirme
 
-Bu proje eğitim amaçlı geliştirilmiş olup, web güvenliği analizi ve incident response süreçlerini anlamak için hazırlanmıştır.
+Bu çalışma, siber güvenlik alanında özellikle **log analizi ve olay müdahale süreçlerine giriş seviyesinde bir uygulama** olarak tasarlanmıştır.
+
+Eğitim amacıyla geliştirilmiş olup, gerçek sistem davranışlarının basitleştirilmiş bir modelini temsil etmektedir.
