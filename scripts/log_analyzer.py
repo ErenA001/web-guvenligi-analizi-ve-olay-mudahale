@@ -1,26 +1,31 @@
-from collections import defaultdict
+file_path = "../logs/sample_access.log"
 
-log_file = "../logs/sample_access.log"
+ip_count = {}
+failed_login = {}
 
-failed_logins = defaultdict(int)
-ip_requests = defaultdict(int)
-
-with open(log_file, "r") as file:
+with open(file_path, "r") as file:
     for line in file:
         parts = line.split()
+
         ip = parts[0]
-        status_code = parts[-2]
+        status = parts[-1]
 
-        ip_requests[ip] += 1
+        if ip in ip_count:
+            ip_count[ip] += 1
+        else:
+            ip_count[ip] = 1
 
-        if status_code == "401":
-            failed_logins[ip] += 1
+        if status == "401":
+            if ip in failed_login:
+                failed_login[ip] += 1
+            else:
+                failed_login[ip] = 1
 
-print("\n=== IP Request Count ===")
-for ip, count in ip_requests.items():
+print("\n=== IP TRAFFIC ===")
+for ip, count in ip_count.items():
     print(ip, "->", count)
 
-print("\n=== Suspicious IPs ===")
-for ip, count in failed_logins.items():
+print("\n=== SUSPICIOUS IPS ===")
+for ip, count in failed_login.items():
     if count >= 2:
-        print(ip, "-> POSSIBLE BRUTE FORCE")
+        print(ip, "-> BRUTE FORCE RISK")
