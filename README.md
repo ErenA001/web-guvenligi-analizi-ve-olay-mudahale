@@ -1,137 +1,137 @@
-# 🛡️ Web Güvenliği Analizi ve Olay Müdahale (Staj Projesi)
+# 🛡️ Web Security Analysis and Incident Response (Internship Project)
 
-## 📌 Proje Hakkında
+🇹🇷 Turkish version: [README_TR.md](README_TR.md)
 
-Bu proje, staj süreci kapsamında geliştirilmiş bir **web güvenliği analizi ve olay müdahale (incident response)** çalışmasıdır.
+## 📌 About the Project
 
-Projenin temel amacı, bir web uygulamasının güvenlik durumunu temel seviyede analiz etmek, web sunucusu log kayıtları üzerinden şüpheli aktiviteleri tespit etmek ve tespit edilen risklere karşı uygun iyileştirme veya müdahale önerileri üretmektir.
+This project is a **web security analysis and incident response** study developed as part of an internship process.
 
-Bu çalışma, hem log tabanlı güvenlik analizi hem de web uygulaması güvenlik kontrolleri üzerine odaklanmaktadır. Proje eğitim amacıyla geliştirilmiş olup, gerçek dünya siber güvenlik süreçlerinin basitleştirilmiş bir modelini temsil etmektedir.
+The main purpose of the project is to analyze the basic security posture of a web application, detect suspicious activities through web server log records, and provide appropriate improvement or response recommendations for identified risks.
 
----
-
-## 🎯 Projenin Amacı
-
-Bu projenin temel amacı, gerçek dünya siber güvenlik süreçlerine benzer şekilde:
-
-- Web tabanlı sistemlerde oluşabilecek güvenlik olaylarını analiz etmek
-- Sunucu log kayıtları üzerinden anormal davranışları tespit etmek
-- Şüpheli IP adreslerini belirlemek ve sınıflandırmak
-- 401 Unauthorized ve 403 Forbidden gibi HTTP durum kodlarını güvenlik açısından yorumlamak
-- Brute force gibi temel saldırı davranışlarını incelemek
-- Web uygulamasının temel güvenlik kontrollerini değerlendirmek
-- Güvenlik eksiklerini tespit ederek iyileştirme önerileri sunmak
-- Incident response (olay müdahale) mantığını temel seviyede uygulamak
-- Log analizi ve web güvenliği konusunda teknik farkındalık geliştirmek
+This study focuses on both log-based security analysis and basic web application security checks. It is developed for educational purposes and represents a simplified model of real-world cybersecurity processes.
 
 ---
 
-## 🧠 Proje Yaklaşımı
+## 🎯 Project Purpose
 
-Proje iki ana yaklaşım üzerine kurulmuştur:
+The main purpose of this project is to simulate real-world cybersecurity processes at a basic level by:
 
-### 1. Log Tabanlı Güvenlik Analizi
+- Analyzing possible security events in web-based systems
+- Detecting abnormal behavior through server log records
+- Identifying and classifying suspicious IP addresses
+- Interpreting HTTP status codes such as 401 Unauthorized and 403 Forbidden from a security perspective
+- Examining basic attack behaviors such as brute force attempts
+- Evaluating basic security controls of a web application
+- Identifying security weaknesses and suggesting improvements
+- Applying the basic logic of incident response
+- Improving technical awareness about log analysis and web security
 
-Bu aşamada web sunucusu veya örnek olarak oluşturulan log kayıtları incelenir. Loglar üzerinden IP adresleri, HTTP istekleri, durum kodları ve başarısız erişim denemeleri analiz edilir.
+---
 
-Bu analiz sayesinde:
+## 🧠 Project Approach
 
-- IP adreslerinin trafik davranışları incelenir
-- Başarısız giriş denemeleri tespit edilir
-- Şüpheli istek yoğunlukları belirlenir
-- Yetkisiz erişim girişimleri gözlemlenir
-- Olası saldırı davranışları hakkında yorum yapılır
+The project is based on two main approaches:
 
-Bu bölüm, temel bir **Security Operations Center (SOC)** mantığını simüle etmektedir.
+### 1. Log-Based Security Analysis
 
-### 2. Web Güvenlik Kontrolü
+In this phase, web server logs or sample log records are analyzed. IP addresses, HTTP requests, status codes, and failed access attempts are reviewed through log data.
 
-Projenin ilerleyen aşamalarında, yalnızca log kayıtları değil, web uygulamasının temel güvenlik yapılandırmaları da değerlendirilecektir.
+This analysis helps to:
 
-Bu kapsamda:
+- Examine traffic behavior of IP addresses
+- Detect failed login attempts
+- Identify suspicious request patterns
+- Observe unauthorized access attempts
+- Interpret possible attack behavior
 
-- HTTPS kullanımı
+This section simulates the basic logic of a **Security Operations Center (SOC)**.
+
+### 2. Web Security Checks
+
+In later stages of the project, not only log records but also the basic security configuration of the web application will be evaluated.
+
+This includes checking:
+
+- HTTPS usage
 - HTTP security headers
-- Cookie güvenliği
-- Login güvenliği
-- Erişim kontrolü
-- Hata mesajları
-- OWASP Top 10 kapsamındaki temel riskler
+- Cookie security
+- Login security
+- Access control
+- Error messages
+- Basic risks within the OWASP Top 10 scope
 
-gibi başlıklar incelenecektir.
-
-Bu sayede projenin amacı yalnızca logları okumak değil, aynı zamanda bir web uygulamasının güvenlik açısından güçlü ve zayıf yönlerini temel seviyede değerlendirmektir.
+The goal is not only to read logs, but also to evaluate the basic strengths and weaknesses of a web application from a security perspective.
 
 ---
 
-## 🔐 Kapsanan Güvenlik Konuları
+## 🔐 Covered Security Topics
 
-Proje aşağıdaki temel web güvenliği konularına odaklanmaktadır:
+This project focuses on the following basic web security topics:
 
-- Web uygulama güvenliği temelleri
-- HTTP protokolü davranış analizi
-- Web sunucusu log analizi
-- IP bazlı trafik analizi
-- Brute force saldırı mantığı
-- Yetkisiz erişim girişimleri
-- 401 ve 403 durum kodlarının güvenlik açısından yorumlanması
-- Log analizi ile tehdit tespiti
-- Temel web güvenlik kontrolleri
-- OWASP Top 10 farkındalığı
-- Incident response süreçlerinin temel mantığı
-
----
-
-## 🛠️ Kullanılan Teknolojiler ve Yöntemler
-
-- Python 3 ile veri işleme ve analiz
-- Log parsing (metin tabanlı veri analizi)
-- IP bazlı trafik inceleme
-- HTTP status code analizi
-- Git & GitHub versiyon kontrolü
-- CLI (komut satırı) tabanlı geliştirme yaklaşımı
-- Temel siber güvenlik analiz teknikleri
-- Web güvenlik kontrol listesi yaklaşımı
+- Web application security fundamentals
+- HTTP protocol behavior analysis
+- Web server log analysis
+- IP-based traffic analysis
+- Brute force attack behavior
+- Unauthorized access attempts
+- Security interpretation of 401 and 403 status codes
+- Threat detection through log analysis
+- Basic web security checks
+- OWASP Top 10 awareness
+- Basic incident response logic
 
 ---
 
-## 🚨 Olay Müdahale Yaklaşımı
+## 🛠️ Technologies and Methods
 
-Proje kapsamında tespit edilen şüpheli durumlar yalnızca listelenmekle kalmayacak, aynı zamanda temel olay müdahale mantığıyla değerlendirilecektir.
-
-Örnek müdahale ve iyileştirme önerileri:
-
-- Şüpheli IP adresinin izlenmesi
-- Tekrarlanan başarısız giriş denemelerinin incelenmesi
-- Rate limiting uygulanması
-- Güvenlik headerlarının eklenmesi
-- Hatalı yapılandırmaların düzeltilmesi
-- Log kayıtlarının düzenli olarak takip edilmesi
-- Riskli alanların iyileştirilmesi
-
-Bu yaklaşım sayesinde proje, yalnızca tespit yapan bir araç değil, aynı zamanda temel seviyede öneri sunan bir güvenlik analizi çalışması haline getirilmektedir.
+- Python 3 for data processing and analysis
+- Log parsing
+- IP-based traffic analysis
+- HTTP status code analysis
+- Git & GitHub version control
+- CLI-based development workflow
+- Basic cybersecurity analysis techniques
+- Web security checklist approach
 
 ---
 
-## 📈 Projenin Katkısı
+## 🚨 Incident Response Approach
 
-Bu proje sayesinde:
+Suspicious activities detected during the project will not only be listed, but also evaluated using basic incident response logic.
 
-- Web güvenlik olaylarının nasıl analiz edildiği öğrenilmiştir
-- Log verilerinin güvenlik açısından önemi anlaşılmıştır
-- Şüpheli davranışların nasıl tespit edildiği simüle edilmiştir
-- IP bazlı trafik analizinin temel mantığı kavranmıştır
-- HTTP durum kodlarının güvenlik analizindeki rolü öğrenilmiştir
-- Web uygulamalarında temel güvenlik kontrollerinin önemi anlaşılmıştır
-- Incident response sürecinin temel mantığı kavranmıştır
-- Gerçek dünya SOC ve web güvenliği süreçlerine giriş seviyesi bir bakış sağlanmıştır
+Example response and improvement recommendations include:
+
+- Monitoring suspicious IP addresses
+- Reviewing repeated failed login attempts
+- Applying rate limiting
+- Adding security headers
+- Fixing insecure configurations
+- Regularly reviewing log records
+- Improving risky areas
+
+With this approach, the project becomes not only a detection tool, but also a basic security analysis study that provides improvement suggestions.
 
 ---
 
-## 📌 Genel Değerlendirme
+## 📈 Project Contribution
 
-Bu çalışma, siber güvenlik alanında özellikle **web güvenliği analizi, log analizi ve olay müdahale süreçlerine giriş seviyesinde bir uygulama** olarak tasarlanmıştır.
+Through this project:
 
-Proje, eğitim ve staj amacıyla geliştirilmiştir. Bu nedenle kullanılan senaryolar ve analiz yöntemleri temel seviyede tutulmuştur. Amaç, zararlı faaliyet gerçekleştirmek değil; sahip olunan veya izin verilen sistemlerde güvenlik durumunu incelemek, riskleri fark etmek ve iyileştirme önerileri geliştirmektir.
+- The analysis of web security events is practiced
+- The importance of log data in security monitoring is understood
+- Suspicious behavior detection is simulated
+- The logic of IP-based traffic analysis is learned
+- The role of HTTP status codes in security analysis is understood
+- The importance of basic web application security controls is recognized
+- The basic logic of incident response is practiced
+- An entry-level perspective on real-world SOC and web security processes is gained
 
-İlerleyen aşamalarda proje; saldırı tespiti, severity scoring, incident classification, incident response önerileri ve web güvenlik kontrol listesi gibi başlıklarla geliştirilecektir.
+---
+
+## 📌 General Evaluation
+
+This study is designed as an entry-level practical project in **web security analysis, log analysis, and incident response**.
+
+The project is developed for educational and internship purposes. Therefore, the scenarios and analysis methods are kept at a basic level. The purpose is not to perform harmful activities, but to analyze the security posture of owned or authorized systems, identify risks, and develop improvement recommendations.
+
+In later stages, the project will be improved with attack detection, severity scoring, incident classification, incident response recommendations, and a web security checklist.
