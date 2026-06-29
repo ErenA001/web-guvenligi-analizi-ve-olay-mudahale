@@ -1,7 +1,7 @@
-# Day 06 - Brute Force Detection
+# Day 07 - Severity Scoring
 
-# Bu script log dosyasini okuyarak IP trafigini, basit saldiri belirtilerini
-# ve brute force denemelerini analiz eder.
+# Bu script log dosyasini okuyarak IP trafigini, basit saldiri belirtilerini,
+# brute force denemelerini ve risk skorlarini analiz eder.
 
 from collections import defaultdict
 
@@ -9,6 +9,23 @@ log_file = "logs/sample_access.log"
 
 # Brute force icin esik degeri
 BRUTE_FORCE_LIMIT = 5
+
+# Severity scoring agırlıkları
+SCORE_401 = 2
+SCORE_403 = 3
+SCORE_FAILED_LOGIN = 5
+
+# Severity seviyeleri icin esik degerleri
+SEVERITY_LOW_MAX = 4
+SEVERITY_MEDIUM_MAX = 9
+
+def get_severity(score):
+    if score <= SEVERITY_LOW_MAX:
+        return "LOW"
+    elif score <= SEVERITY_MEDIUM_MAX:
+        return "MEDIUM"
+    else:
+        return "HIGH"
 
 def analyze_logs(file_path):
 
@@ -63,7 +80,7 @@ def analyze_logs(file_path):
         print("Log dosyasi bulunamadi:", file_path)
         return
 
-    print("\n=== DAY 06 - BRUTE FORCE DETECTION ===\n")
+    print("\n=== DAY 07 - SEVERITY SCORING ===\n")
 
     print("Toplam okunan log satiri:", total_lines)
     print("Atlanan satir sayisi:", skipped_lines)
@@ -115,7 +132,6 @@ def analyze_logs(file_path):
     if suspicious_ip_found == False:
         print("Supheli IP bulunmadi.")
 
-    # Brute force detection
     print("\n--- Brute Force Suphesi Olan IP Adresleri ---")
     brute_force_found = False
 
@@ -127,6 +143,13 @@ def analyze_logs(file_path):
 
     if brute_force_found == False:
         print("Brute force suphesi bulunmadi.")
+
+    # Severity scoring
+    print("\n--- IP Severity Skorlari ---")
+    for ip in sorted(ip_counts.keys()):
+        score = (unauthorized_counts[ip] * SCORE_401) + (forbidden_counts[ip] * SCORE_403) + (failed_login_counts[ip] * SCORE_FAILED_LOGIN)
+        severity = get_severity(score)
+        print(ip, "->", severity, "(score:", str(score) + ")")
 
     print("\nAnaliz tamamlandi.")
 
