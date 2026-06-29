@@ -1,16 +1,19 @@
-# Day 05 - Basic Attack Detection
-# Bu script log dosyasini okuyarak IP trafigini ve basit saldiri belirtilerini analiz eder.
+# Day 06 - Brute Force Detection
+
+# Bu script log dosyasini okuyarak IP trafigini, basit saldiri belirtilerini
+# ve brute force denemelerini analiz eder.
 
 from collections import defaultdict
 
-
 log_file = "logs/sample_access.log"
 
+# Brute force icin esik degeri
+BRUTE_FORCE_LIMIT = 5
 
 def analyze_logs(file_path):
+
     ip_counts = defaultdict(int)
     status_counts = defaultdict(int)
-
     unauthorized_counts = defaultdict(int)
     forbidden_counts = defaultdict(int)
     failed_login_counts = defaultdict(int)
@@ -32,6 +35,7 @@ def analyze_logs(file_path):
                 # IP METHOD PATH STATUS
                 # Ornek:
                 # 192.168.1.11 POST /login 401
+
                 if len(parts) < 4:
                     skipped_lines += 1
                     continue
@@ -59,23 +63,20 @@ def analyze_logs(file_path):
         print("Log dosyasi bulunamadi:", file_path)
         return
 
-    print("\n=== DAY 05 - BASIC ATTACK DETECTION ===\n")
+    print("\n=== DAY 06 - BRUTE FORCE DETECTION ===\n")
 
     print("Toplam okunan log satiri:", total_lines)
     print("Atlanan satir sayisi:", skipped_lines)
 
     print("\n--- IP Bazli Request Sayilari ---")
-
     for ip, count in sorted(ip_counts.items(), key=lambda item: item[1], reverse=True):
         print(ip, "->", count, "request")
 
     print("\n--- HTTP Status Code Dagilimi ---")
-
     for status, count in sorted(status_counts.items()):
         print(status, "->", count, "adet")
 
     print("\n--- 401 Unauthorized Denemeleri ---")
-
     if len(unauthorized_counts) == 0:
         print("401 Unauthorized denemesi bulunmadi.")
     else:
@@ -83,7 +84,6 @@ def analyze_logs(file_path):
             print(ip, "->", count, "adet 401")
 
     print("\n--- 403 Forbidden Denemeleri ---")
-
     if len(forbidden_counts) == 0:
         print("403 Forbidden denemesi bulunmadi.")
     else:
@@ -91,7 +91,6 @@ def analyze_logs(file_path):
             print(ip, "->", count, "adet 403")
 
     print("\n--- Login Path Uzerindeki Basarisiz Denemeler ---")
-
     if len(failed_login_counts) == 0:
         print("/login uzerinde basarisiz deneme bulunmadi.")
     else:
@@ -99,7 +98,6 @@ def analyze_logs(file_path):
             print(ip, "->", count, "basarisiz login denemesi")
 
     print("\n--- Supheli IP Listesi ---")
-
     suspicious_ip_found = False
 
     for ip in sorted(ip_counts.keys()):
@@ -107,8 +105,6 @@ def analyze_logs(file_path):
         forbidden_count = forbidden_counts[ip]
         failed_login_count = failed_login_counts[ip]
 
-        # Gun 5 icin basit kural:
-        # Ayni IP birden fazla 401 veya 403 aliyorsa supheli olarak gosterilir.
         if unauthorized_count > 1 or forbidden_count > 1:
             suspicious_ip_found = True
             print(ip, "-> suspicious activity detected")
@@ -119,7 +115,19 @@ def analyze_logs(file_path):
     if suspicious_ip_found == False:
         print("Supheli IP bulunmadi.")
 
-    print("\nAnaliz tamamlandi.")
+    # Brute force detection
+    print("\n--- Brute Force Suphesi Olan IP Adresleri ---")
+    brute_force_found = False
 
+    for ip, count in sorted(failed_login_counts.items(), key=lambda item: item[1], reverse=True):
+        if count >= BRUTE_FORCE_LIMIT:
+            brute_force_found = True
+            print(ip, "-> possible brute force detected")
+            print("   failed login count:", count)
+
+    if brute_force_found == False:
+        print("Brute force suphesi bulunmadi.")
+
+    print("\nAnaliz tamamlandi.")
 
 analyze_logs(log_file)

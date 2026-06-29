@@ -8,3 +8,6 @@
 172.16.0.8 GET /contact 200
 172.16.0.8 GET /home 200
 192.168.1.12 GET /secret 403
+192.168.1.11 POST /login 401
+192.168.1.11 POST /login 401
+192.168.1.11 POST /login 401
