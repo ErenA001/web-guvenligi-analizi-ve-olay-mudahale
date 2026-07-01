@@ -1,7 +1,7 @@
-# Day 07 - Severity Scoring
+# Day 08 - Incident Classification
 
 # Bu script log dosyasini okuyarak IP trafigini, basit saldiri belirtilerini,
-# brute force denemelerini ve risk skorlarini analiz eder.
+# brute force denemelerini, risk skorlarini ve incident type siniflandirmasini analiz eder.
 
 from collections import defaultdict
 
@@ -10,14 +10,20 @@ log_file = "logs/sample_access.log"
 # Brute force icin esik degeri
 BRUTE_FORCE_LIMIT = 5
 
-# Severity scoring agırlıkları
+# Severity scoring agirliklari
 SCORE_401 = 2
 SCORE_403 = 3
 SCORE_FAILED_LOGIN = 5
+SCORE_BRUTE_FORCE_BONUS = 10
 
 # Severity seviyeleri icin esik degerleri
 SEVERITY_LOW_MAX = 4
 SEVERITY_MEDIUM_MAX = 9
+
+# Incident classification icin esik degerleri
+UNAUTHORIZED_ACCESS_LIMIT = 3
+FORBIDDEN_ACCESS_LIMIT = 3
+SUSPICIOUS_ACTIVITY_SCORE_LIMIT = 5
 
 def get_severity(score):
     if score <= SEVERITY_LOW_MAX:
@@ -26,6 +32,18 @@ def get_severity(score):
         return "MEDIUM"
     else:
         return "HIGH"
+
+def classify_incident(failed_login_count, unauthorized_count, forbidden_count, brute_force, score):
+    if brute_force:
+        return "BRUTE_FORCE"
+    elif failed_login_count >= UNAUTHORIZED_ACCESS_LIMIT:
+        return "UNAUTHORIZED_ACCESS"
+    elif forbidden_count >= FORBIDDEN_ACCESS_LIMIT:
+        return "FORBIDDEN_ACCESS"
+    elif score >= SUSPICIOUS_ACTIVITY_SCORE_LIMIT:
+        return "SUSPICIOUS_ACTIVITY"
+    else:
+        return "NORMAL"
 
 def analyze_logs(file_path):
 
@@ -80,7 +98,7 @@ def analyze_logs(file_path):
         print("Log dosyasi bulunamadi:", file_path)
         return
 
-    print("\n=== DAY 07 - SEVERITY SCORING ===\n")
+    print("\n=== DAY 08 - INCIDENT CLASSIFICATION ===\n")
 
     print("Toplam okunan log satiri:", total_lines)
     print("Atlanan satir sayisi:", skipped_lines)
@@ -114,42 +132,52 @@ def analyze_logs(file_path):
         for ip, count in sorted(failed_login_counts.items(), key=lambda item: item[1], reverse=True):
             print(ip, "->", count, "basarisiz login denemesi")
 
-    print("\n--- Supheli IP Listesi ---")
-    suspicious_ip_found = False
-
-    for ip in sorted(ip_counts.keys()):
-        unauthorized_count = unauthorized_counts[ip]
-        forbidden_count = forbidden_counts[ip]
-        failed_login_count = failed_login_counts[ip]
-
-        if unauthorized_count > 1 or forbidden_count > 1:
-            suspicious_ip_found = True
-            print(ip, "-> suspicious activity detected")
-            print("   401 count:", unauthorized_count)
-            print("   403 count:", forbidden_count)
-            print("   failed login count:", failed_login_count)
-
-    if suspicious_ip_found == False:
-        print("Supheli IP bulunmadi.")
-
     print("\n--- Brute Force Suphesi Olan IP Adresleri ---")
     brute_force_found = False
+    brute_force_ips = set()
 
     for ip, count in sorted(failed_login_counts.items(), key=lambda item: item[1], reverse=True):
         if count >= BRUTE_FORCE_LIMIT:
             brute_force_found = True
+            brute_force_ips.add(ip)
             print(ip, "-> possible brute force detected")
             print("   failed login count:", count)
 
     if brute_force_found == False:
         print("Brute force suphesi bulunmadi.")
 
-    # Severity scoring
-    print("\n--- IP Severity Skorlari ---")
+    print("\n--- Incident Classification Summary ---")
     for ip in sorted(ip_counts.keys()):
-        score = (unauthorized_counts[ip] * SCORE_401) + (forbidden_counts[ip] * SCORE_403) + (failed_login_counts[ip] * SCORE_FAILED_LOGIN)
+        request_count = ip_counts[ip]
+        unauthorized_count = unauthorized_counts[ip]
+        forbidden_count = forbidden_counts[ip]
+        failed_login_count = failed_login_counts[ip]
+        brute_force = ip in brute_force_ips
+
+        score = (unauthorized_count * SCORE_401) + (forbidden_count * SCORE_403) + (failed_login_count * SCORE_FAILED_LOGIN)
+
+        if brute_force:
+            score += SCORE_BRUTE_FORCE_BONUS
+
         severity = get_severity(score)
-        print(ip, "->", severity, "(score:", str(score) + ")")
+
+        incident_type = classify_incident(
+            failed_login_count,
+            unauthorized_count,
+            forbidden_count,
+            brute_force,
+            score
+        )
+
+        print("\nIP:", ip)
+        print("Request Count:", request_count)
+        print("Unauthorized Count:", unauthorized_count)
+        print("Forbidden Count:", forbidden_count)
+        print("Failed Login Count:", failed_login_count)
+        print("Brute Force:", brute_force)
+        print("Score:", score)
+        print("Severity:", severity)
+        print("Incident Type:", incident_type)
 
     print("\nAnaliz tamamlandi.")
 
