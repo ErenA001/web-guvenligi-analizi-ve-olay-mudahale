@@ -39,6 +39,19 @@ def classify_incident(failed_login_count, forbidden_count, brute_force, score):
         return "NORMAL"
 
 
+def get_recommendation(incident_type):
+    if incident_type == "BRUTE_FORCE":
+        return "IP engellenmeli (block)"
+    elif incident_type == "UNAUTHORIZED_ACCESS":
+        return "Rate limiting uygulanmali"
+    elif incident_type == "FORBIDDEN_ACCESS":
+        return "Erisim yetkileri gozden gecirilmeli"
+    elif incident_type == "SUSPICIOUS_ACTIVITY":
+        return "Izlemeye devam edilmeli (monitoring)"
+    else:
+        return "Aksiyon gerekmiyor"
+
+
 def analyze_logs(file_path):
 
     ip_counts = defaultdict(int)
@@ -88,7 +101,7 @@ def analyze_logs(file_path):
         if count >= BRUTE_FORCE_LIMIT:
             brute_force_ips.add(ip)
 
-    print("\n=== DAY 08 - INCIDENT CLASSIFICATION ===\n")
+    print("\n=== DAY 09 - INCIDENT RESPONSE RECOMMENDATIONS ===\n")
     print("Toplam okunan log satiri:", total_lines)
     print("Atlanan satir sayisi:", skipped_lines)
 
@@ -120,6 +133,7 @@ def analyze_logs(file_path):
 
         severity = get_severity(score)
         incident_type = classify_incident(failed_login_count, forbidden_count, brute_force, score)
+        recommendation = get_recommendation(incident_type)
 
         print("\nIP:", ip)
         print("Request Count:", ip_counts[ip])
@@ -130,6 +144,7 @@ def analyze_logs(file_path):
         print("Score:", score)
         print("Severity:", severity)
         print("Incident Type:", incident_type)
+        print("Recommended Action:", recommendation)
 
     print("\nAnaliz tamamlandi.")
 
