@@ -3,7 +3,9 @@ import os
 
 log_file = "logs/sample_access.log"
 
-REPORT_DATE = "20260703"
+REPORT_DATE = "20260706"
+
+HIGH_FORBIDDEN_THRESHOLD = 5
 
 BRUTE_FORCE_LIMIT = 5
 
@@ -55,6 +57,28 @@ def get_recommendation(incident_type):
         return "Izlemeye devam edilmeli (monitoring)"
     else:
         return "Aksiyon gerekmiyor"
+
+
+def generate_checklist(brute_force_ips, total_forbidden, high_severity_count):
+
+    checklist_lines = []
+
+    if len(brute_force_ips) == 0:
+        checklist_lines.append("[OK] Brute force koruması: supheli aktivite yok (OWASP: Broken Authentication)")
+    else:
+        checklist_lines.append("[UYARI] Brute force koruması: " + str(len(brute_force_ips)) + " IP supheli (OWASP: Broken Authentication)")
+
+    if total_forbidden >= HIGH_FORBIDDEN_THRESHOLD:
+        checklist_lines.append("[UYARI] 403 sayisi normalin uzerinde: " + str(total_forbidden) + " adet (OWASP: Broken Access Control)")
+    else:
+        checklist_lines.append("[OK] 403 sayisi normal seviyede: " + str(total_forbidden) + " adet (OWASP: Broken Access Control)")
+
+    if high_severity_count == 0:
+        checklist_lines.append("[OK] HIGH severity IP bulunmadi (OWASP: Security Logging and Monitoring Failures)")
+    else:
+        checklist_lines.append("[UYARI] " + str(high_severity_count) + " adet HIGH severity IP tespit edildi (OWASP: Security Logging and Monitoring Failures)")
+
+    return checklist_lines
 
 
 def export_report(report_lines):
@@ -119,7 +143,7 @@ def analyze_logs(file_path):
         if count >= BRUTE_FORCE_LIMIT:
             brute_force_ips.add(ip)
 
-    print("\n=== DAY 10 - REPORT GENERATION ===\n")
+    print("\n=== DAY 11 - SECURITY CHECKLIST ===\n")
     print("Toplam okunan log satiri:", total_lines)
     print("Atlanan satir sayisi:", skipped_lines)
 
@@ -146,6 +170,8 @@ def analyze_logs(file_path):
     report_lines.append("")
 
     print("\n--- Incident Classification Summary ---")
+    high_severity_count = 0
+    total_forbidden = sum(forbidden_counts.values())
     for ip in sorted(ip_counts.keys()):
         unauthorized_count = unauthorized_counts[ip]
         forbidden_count = forbidden_counts[ip]
@@ -157,6 +183,8 @@ def analyze_logs(file_path):
             score += SCORE_BRUTE_FORCE_BONUS
 
         severity = get_severity(score)
+        if severity == "HIGH":
+            high_severity_count += 1
         incident_type = classify_incident(failed_login_count, forbidden_count, brute_force, score)
         recommendation = get_recommendation(incident_type)
 
@@ -182,6 +210,16 @@ def analyze_logs(file_path):
         report_lines.append("- Incident Type: " + incident_type)
         report_lines.append("- Recommended Action: " + recommendation)
         report_lines.append("")
+
+    print("\n--- Security Checklist ---")
+    checklist_lines = generate_checklist(brute_force_ips, total_forbidden, high_severity_count)
+    for checklist_item in checklist_lines:
+        print(checklist_item)
+
+    report_lines.append("## Security Checklist")
+    for checklist_item in checklist_lines:
+        report_lines.append("- " + checklist_item)
+    report_lines.append("")
 
     export_report(report_lines)
 
