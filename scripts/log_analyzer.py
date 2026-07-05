@@ -1,4 +1,6 @@
 from collections import defaultdict
+import os
+from datetime import datetime
 
 log_file = "logs/sample_access.log"
 
@@ -15,6 +17,8 @@ SEVERITY_MEDIUM_MAX = 9
 FAILED_LOGIN_LIMIT = 3
 FORBIDDEN_LIMIT = 3
 SUSPICIOUS_SCORE_LIMIT = 5
+
+REPORTS_DIR = "reports"
 
 
 def get_severity(score):
@@ -50,6 +54,20 @@ def get_recommendation(incident_type):
         return "Izlemeye devam edilmeli (monitoring)"
     else:
         return "Aksiyon gerekmiyor"
+
+
+def export_report(report_lines):
+    if not os.path.exists(REPORTS_DIR):
+        os.makedirs(REPORTS_DIR)
+
+    today_str = datetime.now().strftime("%Y%m%d")
+    report_path = os.path.join(REPORTS_DIR, "report_" + today_str + ".md")
+
+    with open(report_path, "w", encoding="utf-8") as report_file:
+        for line in report_lines:
+            report_file.write(line + "\n")
+
+    print("\nRapor dosyaya yazildi:", report_path)
 
 
 def analyze_logs(file_path):
@@ -101,7 +119,7 @@ def analyze_logs(file_path):
         if count >= BRUTE_FORCE_LIMIT:
             brute_force_ips.add(ip)
 
-    print("\n=== DAY 09 - INCIDENT RESPONSE RECOMMENDATIONS ===\n")
+    print("\n=== DAY 10 - REPORT GENERATION ===\n")
     print("Toplam okunan log satiri:", total_lines)
     print("Atlanan satir sayisi:", skipped_lines)
 
@@ -119,6 +137,14 @@ def analyze_logs(file_path):
     else:
         for ip in brute_force_ips:
             print(ip, "-> possible brute force detected")
+
+    # Rapor dosyasina yazilacak satirlar burada biriktiriliyor.
+    report_lines = []
+    report_lines.append("# Incident Classification Report")
+    report_lines.append("")
+    report_lines.append("Toplam okunan log satiri: " + str(total_lines))
+    report_lines.append("Atlanan satir sayisi: " + str(skipped_lines))
+    report_lines.append("")
 
     print("\n--- Incident Classification Summary ---")
     for ip in sorted(ip_counts.keys()):
@@ -145,6 +171,20 @@ def analyze_logs(file_path):
         print("Severity:", severity)
         print("Incident Type:", incident_type)
         print("Recommended Action:", recommendation)
+
+        report_lines.append("## IP: " + ip)
+        report_lines.append("- Request Count: " + str(ip_counts[ip]))
+        report_lines.append("- Unauthorized (401): " + str(unauthorized_count))
+        report_lines.append("- Forbidden (403): " + str(forbidden_count))
+        report_lines.append("- Failed Login: " + str(failed_login_count))
+        report_lines.append("- Brute Force: " + str(brute_force))
+        report_lines.append("- Score: " + str(score))
+        report_lines.append("- Severity: " + severity)
+        report_lines.append("- Incident Type: " + incident_type)
+        report_lines.append("- Recommended Action: " + recommendation)
+        report_lines.append("")
+
+    export_report(report_lines)
 
     print("\nAnaliz tamamlandi.")
 
