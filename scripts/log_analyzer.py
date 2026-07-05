@@ -1,8 +1,9 @@
 from collections import defaultdict
 import os
-from datetime import datetime
 
 log_file = "logs/sample_access.log"
+
+REPORT_DATE = "20260703"
 
 BRUTE_FORCE_LIMIT = 5
 
@@ -60,8 +61,7 @@ def export_report(report_lines):
     if not os.path.exists(REPORTS_DIR):
         os.makedirs(REPORTS_DIR)
 
-    today_str = datetime.now().strftime("%Y%m%d")
-    report_path = os.path.join(REPORTS_DIR, "report_" + today_str + ".md")
+    report_path = os.path.join(REPORTS_DIR, "report_" + REPORT_DATE + ".md")
 
     with open(report_path, "w", encoding="utf-8") as report_file:
         for line in report_lines:
@@ -138,7 +138,6 @@ def analyze_logs(file_path):
         for ip in brute_force_ips:
             print(ip, "-> possible brute force detected")
 
-    # Rapor dosyasina yazilacak satirlar burada biriktiriliyor.
     report_lines = []
     report_lines.append("# Incident Classification Report")
     report_lines.append("")
