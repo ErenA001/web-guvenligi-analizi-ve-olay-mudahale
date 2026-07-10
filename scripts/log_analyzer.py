@@ -5,11 +5,12 @@ import urllib.error
 
 log_file = "logs/sample_access.log"
 
-REPORT_DATE = "20260707"
+REPORT_DATE = "20260708"
 
 HIGH_FORBIDDEN_THRESHOLD = 5
 
 BRUTE_FORCE_LIMIT = 5
+SCANNER_PATH_LIMIT = 5
 
 SCORE_401 = 2
 SCORE_403 = 3
@@ -50,13 +51,15 @@ def get_severity(score):
         return "HIGH"
 
 
-def classify_incident(failed_login_count, forbidden_count, brute_force, score):
+def classify_incident(failed_login_count, forbidden_count, brute_force, scanner, score):
     if brute_force:
         return "BRUTE_FORCE"
     elif failed_login_count >= FAILED_LOGIN_LIMIT:
         return "UNAUTHORIZED_ACCESS"
     elif forbidden_count >= FORBIDDEN_LIMIT:
         return "FORBIDDEN_ACCESS"
+    elif scanner:
+        return "SCANNER_ACTIVITY"
     elif score >= SUSPICIOUS_SCORE_LIMIT:
         return "SUSPICIOUS_ACTIVITY"
     else:
@@ -70,13 +73,15 @@ def get_recommendation(incident_type):
         return "Rate limiting uygulanmali"
     elif incident_type == "FORBIDDEN_ACCESS":
         return "Erisim yetkileri gozden gecirilmeli"
+    elif incident_type == "SCANNER_ACTIVITY":
+        return "IP izlenmeli, path taramasi tespit edildi (potansiyel recon)"
     elif incident_type == "SUSPICIOUS_ACTIVITY":
         return "Izlemeye devam edilmeli (monitoring)"
     else:
         return "Aksiyon gerekmiyor"
 
 
-def generate_checklist(brute_force_ips, total_forbidden, high_severity_count):
+def generate_checklist(brute_force_ips, total_forbidden, high_severity_count, scanner_ips):
 
     checklist_lines = []
 
@@ -94,6 +99,11 @@ def generate_checklist(brute_force_ips, total_forbidden, high_severity_count):
         checklist_lines.append("[OK] HIGH severity IP bulunmadi (OWASP: Security Logging and Monitoring Failures)")
     else:
         checklist_lines.append("[UYARI] " + str(high_severity_count) + " adet HIGH severity IP tespit edildi (OWASP: Security Logging and Monitoring Failures)")
+
+    if len(scanner_ips) == 0:
+        checklist_lines.append("[OK] Path taramasi (scanner) suphesi yok (OWASP: Security Misconfiguration)")
+    else:
+        checklist_lines.append("[UYARI] " + str(len(scanner_ips)) + " IP path taramasi yapiyor olabilir (OWASP: Security Misconfiguration)")
 
     return checklist_lines
 
@@ -211,7 +221,9 @@ def analyze_logs(file_path):
     unauthorized_counts = defaultdict(int)
     forbidden_counts = defaultdict(int)
     failed_login_counts = defaultdict(int)
+    ip_paths = defaultdict(set)
     brute_force_ips = set()
+    scanner_ips = set()
 
     total_lines = 0
     skipped_lines = 0
@@ -235,6 +247,7 @@ def analyze_logs(file_path):
 
                 ip_counts[ip] += 1
                 status_counts[status_code] += 1
+                ip_paths[ip].add(path)
                 total_lines += 1
 
                 if status_code == "401":
@@ -253,7 +266,11 @@ def analyze_logs(file_path):
         if count >= BRUTE_FORCE_LIMIT:
             brute_force_ips.add(ip)
 
-    print("\n=== DAY 12 - SECURITY HEADERS CHECKER ===\n")
+    for ip, paths in ip_paths.items():
+        if len(paths) >= SCANNER_PATH_LIMIT:
+            scanner_ips.add(ip)
+
+    print("\n=== DAY 13 - SCANNER ACTIVITY DETECTION ===\n")
     print("Toplam okunan log satiri:", total_lines)
     print("Atlanan satir sayisi:", skipped_lines)
 
@@ -272,6 +289,13 @@ def analyze_logs(file_path):
         for ip in brute_force_ips:
             print(ip, "-> possible brute force detected")
 
+    print("\n--- Scanner Activity Suphesi Olan IP Adresleri ---")
+    if len(scanner_ips) == 0:
+        print("Scanner activity suphesi bulunmadi.")
+    else:
+        for ip in scanner_ips:
+            print(ip, "->", len(ip_paths[ip]), "farkli path -> possible scanner activity")
+
     report_lines = []
     report_lines.append("# Incident Classification Report")
     report_lines.append("")
@@ -287,6 +311,8 @@ def analyze_logs(file_path):
         forbidden_count = forbidden_counts[ip]
         failed_login_count = failed_login_counts[ip]
         brute_force = ip in brute_force_ips
+        scanner = ip in scanner_ips
+        different_path_count = len(ip_paths[ip])
 
         score = (unauthorized_count * SCORE_401) + (forbidden_count * SCORE_403) + (failed_login_count * SCORE_FAILED_LOGIN)
         if brute_force:
@@ -295,7 +321,7 @@ def analyze_logs(file_path):
         severity = get_severity(score)
         if severity == "HIGH":
             high_severity_count += 1
-        incident_type = classify_incident(failed_login_count, forbidden_count, brute_force, score)
+        incident_type = classify_incident(failed_login_count, forbidden_count, brute_force, scanner, score)
         recommendation = get_recommendation(incident_type)
 
         print("\nIP:", ip)
@@ -304,6 +330,8 @@ def analyze_logs(file_path):
         print("Forbidden (403):", forbidden_count)
         print("Failed Login:", failed_login_count)
         print("Brute Force:", brute_force)
+        print("Farkli Path Sayisi:", different_path_count)
+        print("Scanner Activity:", scanner)
         print("Score:", score)
         print("Severity:", severity)
         print("Incident Type:", incident_type)
@@ -315,6 +343,8 @@ def analyze_logs(file_path):
         report_lines.append("- Forbidden (403): " + str(forbidden_count))
         report_lines.append("- Failed Login: " + str(failed_login_count))
         report_lines.append("- Brute Force: " + str(brute_force))
+        report_lines.append("- Farkli Path Sayisi: " + str(different_path_count))
+        report_lines.append("- Scanner Activity: " + str(scanner))
         report_lines.append("- Score: " + str(score))
         report_lines.append("- Severity: " + severity)
         report_lines.append("- Incident Type: " + incident_type)
@@ -322,7 +352,7 @@ def analyze_logs(file_path):
         report_lines.append("")
 
     print("\n--- Security Checklist ---")
-    checklist_lines = generate_checklist(brute_force_ips, total_forbidden, high_severity_count)
+    checklist_lines = generate_checklist(brute_force_ips, total_forbidden, high_severity_count, scanner_ips)
     for checklist_item in checklist_lines:
         print(checklist_item)
 
