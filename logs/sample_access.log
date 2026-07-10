@@ -17,3 +17,5 @@
 198.51.100.77 GET /backup 404
 198.51.100.77 GET /config 404
 198.51.100.77 GET /admin.php 404
+203.0.113.44 GET /files/../../etc/passwd 404
+203.0.113.44 GET /images/../../../config.php 404
