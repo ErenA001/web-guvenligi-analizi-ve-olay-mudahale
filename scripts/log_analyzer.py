@@ -5,7 +5,7 @@ import urllib.error
 
 log_file = "logs/sample_access.log"
 
-REPORT_DATE = "20260709"
+REPORT_DATE = "20260710"
 
 HIGH_FORBIDDEN_THRESHOLD = 5
 
@@ -17,6 +17,8 @@ SCORE_401 = 2
 SCORE_403 = 3
 SCORE_FAILED_LOGIN = 5
 SCORE_BRUTE_FORCE_BONUS = 10
+SCORE_SCANNER = 4
+SCORE_PATH_TRAVERSAL = 8
 
 SEVERITY_LOW_MAX = 4
 SEVERITY_MEDIUM_MAX = 9
@@ -284,7 +286,7 @@ def analyze_logs(file_path):
         if len(paths) >= SCANNER_PATH_LIMIT:
             scanner_ips.add(ip)
 
-    print("\n=== DAY 14 - PATH TRAVERSAL DETECTION ===\n")
+    print("\n=== DAY 15 - SCORING IYILESTIRME ===\n")
     print("Toplam okunan log satiri:", total_lines)
     print("Atlanan satir sayisi:", skipped_lines)
 
@@ -339,6 +341,10 @@ def analyze_logs(file_path):
         score = (unauthorized_count * SCORE_401) + (forbidden_count * SCORE_403) + (failed_login_count * SCORE_FAILED_LOGIN)
         if brute_force:
             score += SCORE_BRUTE_FORCE_BONUS
+        if scanner:
+            score += SCORE_SCANNER
+        if path_traversal:
+            score += SCORE_PATH_TRAVERSAL
 
         severity = get_severity(score)
         if severity == "HIGH":
