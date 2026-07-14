@@ -1,4 +1,6 @@
-REPORT_DATE = "20260710"
+from datetime import datetime
+
+REPORT_DATE = datetime.now().strftime("%Y%m%d")
 
 HIGH_FORBIDDEN_THRESHOLD = 5
 
