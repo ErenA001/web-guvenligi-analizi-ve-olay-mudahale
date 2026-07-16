@@ -49,6 +49,10 @@ def analyze_logs(file_path):
                 path = parts[2]
                 status_code = parts[3]
 
+                if not status_code.isdigit():
+                    skipped_lines += 1
+                    continue
+
                 ip_counts[ip] += 1
                 status_counts[status_code] += 1
                 ip_paths[ip].add(path)
@@ -67,6 +71,20 @@ def analyze_logs(file_path):
 
     except FileNotFoundError:
         print("Log dosyasi bulunamadi:", file_path)
+        return
+
+    if total_lines == 0:
+        print("\nGecerli log satiri bulunamadi (dosya bos veya tum satirlar hatali).")
+        print("Atlanan satir sayisi:", skipped_lines)
+        report_lines = []
+        report_lines.append("# Incident Classification Report")
+        report_lines.append("")
+        report_lines.append("Toplam okunan log satiri: 0")
+        report_lines.append("Atlanan satir sayisi: " + str(skipped_lines))
+        report_lines.append("")
+        report_lines.append("Gecerli veri bulunamadigi icin analiz yapilamadi.")
+        report_lines.append("")
+        export_report(report_lines)
         return
 
     brute_force_ips = find_brute_force_ips(failed_login_counts)

@@ -41,3 +41,5 @@
 10.0.0.9 GET /config.json 403
 198.51.100.90 GET /debug 404
 192.168.1.23 GET /dashboard 200
+192.168.1.50 GET /home
+10.0.0.20 POST /login abc
