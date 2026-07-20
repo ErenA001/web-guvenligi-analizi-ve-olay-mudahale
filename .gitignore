@@ -16,3 +16,4 @@ logs/*.log
 # Generated reports
 reports/
 venv/
+.env
