@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Web Guvenligi Analizi - Dashboard</title>
+</head>
+<body>
+    <h1>Web Guvenligi Analizi - Incident Dashboard</h1>
+    <table border="1" cellpadding="6">
+        <tr>
+            <th>IP</th>
+            <th>Request Count</th>
+            <th>Score</th>
+            <th>Severity</th>
+            <th>Incident Type</th>
+            <th>Recommendation</th>
+        </tr>
+        {% for row in data %}
+        <tr>
+            <td>{{ row.ip }}</td>
+            <td>{{ row.request_count }}</td>
+            <td>{{ row.score }}</td>
+            <td>{{ row.severity }}</td>
+            <td>{{ row.incident_type }}</td>
+            <td>{{ row.recommendation }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

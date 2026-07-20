@@ -71,7 +71,7 @@ def analyze_logs(file_path):
 
     except FileNotFoundError:
         print("Log dosyasi bulunamadi:", file_path)
-        return
+        return []
 
     if total_lines == 0:
         print("\nGecerli log satiri bulunamadi (dosya bos veya tum satirlar hatali).")
@@ -85,7 +85,7 @@ def analyze_logs(file_path):
         report_lines.append("Gecerli veri bulunamadigi icin analiz yapilamadi.")
         report_lines.append("")
         export_report(report_lines)
-        return
+        return []
 
     brute_force_ips = find_brute_force_ips(failed_login_counts)
     scanner_ips = find_scanner_ips(ip_paths)
@@ -133,6 +133,7 @@ def analyze_logs(file_path):
     print("\n--- Incident Classification Summary ---")
     high_severity_count = 0
     total_forbidden = sum(forbidden_counts.values())
+    dashboard_data = []
     for ip in sorted(ip_counts.keys()):
         unauthorized_count = unauthorized_counts[ip]
         forbidden_count = forbidden_counts[ip]
@@ -185,6 +186,15 @@ def analyze_logs(file_path):
         report_lines.append("- Recommended Action: " + recommendation)
         report_lines.append("")
 
+        dashboard_data.append({
+            "ip": ip,
+            "request_count": ip_counts[ip],
+            "score": score,
+            "severity": severity,
+            "incident_type": incident_type,
+            "recommendation": recommendation,
+        })
+
     print("\n--- Security Checklist ---")
     checklist_lines = generate_checklist(brute_force_ips, total_forbidden, high_severity_count, scanner_ips, path_traversal_ips)
     for checklist_item in checklist_lines:
@@ -202,5 +212,8 @@ def analyze_logs(file_path):
 
     print("\nAnaliz tamamlandi.")
 
+    return dashboard_data
 
-analyze_logs(log_file)
+
+if __name__ == "__main__":
+    analyze_logs(log_file)
