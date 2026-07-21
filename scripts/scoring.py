@@ -1,6 +1,7 @@
 from config import (
     SEVERITY_LOW_MAX,
     SEVERITY_MEDIUM_MAX,
+    SEVERITY_HIGH_MAX,
     FAILED_LOGIN_LIMIT,
     FORBIDDEN_LIMIT,
     SUSPICIOUS_SCORE_LIMIT,
@@ -12,8 +13,10 @@ def get_severity(score):
         return "LOW"
     elif score <= SEVERITY_MEDIUM_MAX:
         return "MEDIUM"
-    else:
+    elif score <= SEVERITY_HIGH_MAX:
         return "HIGH"
+    else:
+        return "CRITICAL"
 
 
 def classify_incident(failed_login_count, forbidden_count, brute_force, path_traversal, scanner, score):
