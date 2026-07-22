@@ -5,6 +5,30 @@
 </head>
 <body>
     <h1>Web Guvenligi Analizi - Incident Dashboard</h1>
+
+    <form method="get" action="/">
+        <label for="incident_type">Incident Type:</label>
+        <select name="incident_type" id="incident_type">
+            <option value="">Tumu</option>
+            {% for incident_type in incident_types %}
+            <option value="{{ incident_type }}" {% if incident_type == selected_incident_type %}selected{% endif %}>{{ incident_type }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="severity">Severity:</label>
+        <select name="severity" id="severity">
+            <option value="">Tumu</option>
+            {% for severity in severities %}
+            <option value="{{ severity }}" {% if severity == selected_severity %}selected{% endif %}>{{ severity }}</option>
+            {% endfor %}
+        </select>
+
+        <button type="submit">Filtrele</button>
+    </form>
+
+    {% if data|length == 0 %}
+    <p>Secilen filtrelere uyan sonuc bulunamadi.</p>
+    {% else %}
     <table border="1" cellpadding="6">
         <tr>
             <th>IP</th>
@@ -25,5 +49,6 @@
         </tr>
         {% endfor %}
     </table>
+    {% endif %}
 </body>
 </html>
