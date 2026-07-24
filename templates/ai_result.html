@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Aciklama</title>
+</head>
+<body>
+    <h1>AI Incident Aciklamasi</h1>
+
+    {% if incident %}
+    <p><strong>IP:</strong> {{ incident.ip }}</p>
+    <p><strong>Incident Type:</strong> {{ incident.incident_type }}</p>
+    <p><strong>Severity:</strong> {{ incident.severity }}</p>
+    <p><strong>Score:</strong> {{ incident.score }}</p>
+    {% endif %}
+
+    <h2>AI Aciklamasi</h2>
+    <p>{{ explanation }}</p>
+
+    <p><a href="/">Dashboard'a Don</a></p>
+</body>
+</html>

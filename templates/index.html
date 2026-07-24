@@ -37,6 +37,7 @@
             <th>Severity</th>
             <th>Incident Type</th>
             <th>Recommendation</th>
+            <th>AI Aciklama</th>
         </tr>
         {% for row in data %}
         <tr>
@@ -46,6 +47,12 @@
             <td>{{ row.severity }}</td>
             <td>{{ row.incident_type }}</td>
             <td>{{ row.recommendation }}</td>
+            <td>
+                <form method="post" action="/ai_explain">
+                    <input type="hidden" name="ip" value="{{ row.ip }}">
+                    <button type="submit">AI ile Acikla</button>
+                </form>
+            </td>
         </tr>
         {% endfor %}
     </table>
