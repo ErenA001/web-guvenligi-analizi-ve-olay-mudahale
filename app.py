@@ -45,6 +45,18 @@ def index():
     if selected_severity:
         filtered_data = [row for row in filtered_data if row["severity"] == selected_severity]
 
+    severity_counts = {
+        "LOW": 0,
+        "MEDIUM": 0,
+        "HIGH": 0,
+        "CRITICAL": 0,
+    }
+
+    for row in dashboard_data:
+        severity = row.get("severity")
+        if severity in severity_counts:
+            severity_counts[severity] += 1
+
     return render_template(
         "index.html",
         data=filtered_data,
@@ -52,6 +64,7 @@ def index():
         severities=VALID_SEVERITIES,
         selected_incident_type=selected_incident_type,
         selected_severity=selected_severity,
+        severity_counts=severity_counts,
     )
 
 

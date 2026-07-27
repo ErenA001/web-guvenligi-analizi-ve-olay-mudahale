@@ -2,9 +2,40 @@
 <html>
 <head>
     <title>Web Guvenligi Analizi - Dashboard</title>
+    <style>
+        .severity-summary {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .severity-card {
+            padding: 10px 16px;
+            border: 2px solid #333;
+            border-radius: 6px;
+            font-weight: bold;
+        }
+        .severity-LOW { background-color: #d4edda; }
+        .severity-MEDIUM { background-color: #fff3cd; }
+        .severity-HIGH { background-color: #f8d7da; }
+        .severity-CRITICAL { background-color: #d9534f; color: white; }
+
+        .badge {
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+    </style>
 </head>
 <body>
     <h1>Web Guvenligi Analizi - Incident Dashboard</h1>
+
+    <div class="severity-summary">
+        <div class="severity-card severity-LOW">LOW: {{ severity_counts.LOW }}</div>
+        <div class="severity-card severity-MEDIUM">MEDIUM: {{ severity_counts.MEDIUM }}</div>
+        <div class="severity-card severity-HIGH">HIGH: {{ severity_counts.HIGH }}</div>
+        <div class="severity-card severity-CRITICAL">CRITICAL: {{ severity_counts.CRITICAL }}</div>
+    </div>
 
     <form method="get" action="/">
         <label for="incident_type">Incident Type:</label>
@@ -44,7 +75,7 @@
             <td>{{ row.ip }}</td>
             <td>{{ row.request_count }}</td>
             <td>{{ row.score }}</td>
-            <td>{{ row.severity }}</td>
+            <td><span class="badge severity-{{ row.severity }}">{{ row.severity }}</span></td>
             <td>{{ row.incident_type }}</td>
             <td>{{ row.recommendation }}</td>
             <td>
