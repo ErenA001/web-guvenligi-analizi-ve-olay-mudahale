@@ -1,27 +1,61 @@
 import os
+
 from dotenv import load_dotenv
-from openai import OpenAI
 
-load_dotenv()
+from scripts.config import (
+    AI_TEMPERATURE,
+    AI_TEST_MAX_TOKENS,
+    AI_TOP_P,
+    NVIDIA_MODEL_NAME,
+)
+from services.ai_client import create_nvidia_client
 
-api_key = os.getenv("NVIDIA_API_KEY")
 
-if not api_key:
-    print("HATA: NVIDIA_API_KEY bulunamadi. .env dosyasini kontrol et.")
-else:
-    client = OpenAI(
-        base_url="https://integrate.api.nvidia.com/v1",
-        api_key=api_key,
-    )
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ENV_PATH = os.path.join(PROJECT_ROOT, ".env")
+
+load_dotenv(dotenv_path=ENV_PATH)
+
+NVIDIA_API_KEY = os.getenv("NVIDIA_API_KEY")
+
+
+def test_ai_connection():
+    if not NVIDIA_API_KEY:
+        print(
+            "HATA: NVIDIA_API_KEY bulunamadı. "
+            ".env dosyasını kontrol et."
+        )
+        return
 
     try:
-        completion = client.chat.completions.create(
-            model="deepseek-ai/deepseek-v4-pro",
-            messages=[{"role": "user", "content": "Merhaba, sadece 'Baglanti basarili' yaz."}],
-            temperature=0.5,
-            max_tokens=50,
-        )
-        print("API cevabi:")
+        with create_nvidia_client(NVIDIA_API_KEY) as client:
+            completion = client.chat.completions.create(
+                model=NVIDIA_MODEL_NAME,
+                messages=[
+                    {
+                        "role": "user",
+                        "content": (
+                            "Merhaba, sadece "
+                            "'Bağlantı başarılı' yaz."
+                        ),
+                    }
+                ],
+                temperature=AI_TEMPERATURE,
+                top_p=AI_TOP_P,
+                max_tokens=AI_TEST_MAX_TOKENS,
+                stream=False,
+            )
+
+        print(f"Model: {NVIDIA_MODEL_NAME}")
+        print("API cevabı:")
         print(completion.choices[0].message.content)
+
     except Exception as error:
-        print("API baglanti hatasi:", error)
+        print(
+            "API bağlantı hatası: "
+            f"{type(error).__name__}: {error}"
+        )
+
+
+if __name__ == "__main__":
+    test_ai_connection()
