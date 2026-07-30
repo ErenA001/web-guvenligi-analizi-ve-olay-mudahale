@@ -13,7 +13,11 @@ venv/
 logs/*.log
 !logs/sample_access.log
 
+# Uploaded log files
+uploads/
+
 # Generated reports
 reports/
-venv/
+
+# Environment variables
 .env

@@ -29,6 +29,9 @@ CHATBOT_INSTRUCTIONS = (
     "Sana verilen analiz özetine dayanarak soruları cevapla. "
     "Incident türleri ve severity değerleri yalnızca analiz motorunun "
     "sınıflandırmalarıdır; gerçek bir saldırının kesin kanıtı değildir. "
+    "BRUTE_FORCE ifadesini kötü amaçlı yazılım olarak açıklama; yalnızca "
+    "tekrarlanan giriş veya kimlik doğrulama denemesi belirtisi olarak açıkla. "
+    "Amaç, niyet, veri ele geçirme veya sisteme girme hedefi çıkarımı yapma. "
     "Kesinlik bildiren 'saldırı gerçekleşti', 'saldırı gerçekleştirilmiştir', "
     "'saldırıya uğradı' veya 'saldırgan' ifadelerini kullanma. "
     "Bunun yerine 'şüpheli aktivite', 'brute force belirtisi' veya "
@@ -41,6 +44,104 @@ CHATBOT_INSTRUCTIONS = (
     "Yalnızca mevcut sonuçları sade Türkçe ile açıkla. "
     "En fazla 3-4 cümle kullan."
 )
+
+
+UNSUPPORTED_QUESTION_TERMS = (
+    "amacı",
+    "niyeti",
+    "gerçek adı",
+    "kimliği",
+    "kim yaptı",
+    "saldırgan kim",
+    "hedefi",
+)
+
+HIGHEST_RISK_QUESTION_TERMS = (
+    "en riskli ip",
+    "en yüksek riskli ip",
+    "en yüksek risk puanı",
+)
+
+UNSUPPORTED_RESPONSE_TERMS = (
+    "kötü amaçlı yazılım",
+    "verileri ele geçir",
+    "veri ele geçir",
+    "sisteme girmeye",
+    "sisteme giriş yapmaya",
+    "amacı sistem",
+    "amacı veri",
+    "niyeti",
+)
+
+
+def contains_any_term(text, terms):
+    normalized_text = text.casefold()
+
+    for term in terms:
+        if term.casefold() in normalized_text:
+            return True
+
+    return False
+
+
+def asks_unsupported_identity_or_intent(question):
+    return contains_any_term(
+        question,
+        UNSUPPORTED_QUESTION_TERMS,
+    )
+
+
+def asks_highest_risk_ip(question):
+    return contains_any_term(
+        question,
+        HIGHEST_RISK_QUESTION_TERMS,
+    )
+
+
+def contains_unsupported_response_claim(answer):
+    return contains_any_term(
+        answer,
+        UNSUPPORTED_RESPONSE_TERMS,
+    )
+
+
+def build_highest_risk_answer(dashboard_data):
+    highest_risk_row = max(
+        dashboard_data,
+        key=lambda row: row.get("score", 0) or 0,
+    )
+
+    return (
+        "En yüksek risk puanına sahip IP "
+        f"{highest_risk_row.get('ip', 'UNKNOWN')} adresidir. "
+        "Bu kayıt "
+        f"{highest_risk_row.get('incident_type', 'UNKNOWN')} "
+        "incident türünde, "
+        f"{highest_risk_row.get('severity', 'UNKNOWN')} "
+        "severity seviyesinde ve "
+        f"{highest_risk_row.get('score', 0)} "
+        "risk puanıyla sınıflandırılmıştır."
+    )
+
+
+def build_local_question_answer(question, dashboard_data):
+    answer_parts = []
+
+    if asks_highest_risk_ip(question):
+        answer_parts.append(
+            build_highest_risk_answer(dashboard_data)
+        )
+
+    if asks_unsupported_identity_or_intent(question):
+        answer_parts.append(
+            "IP adresinin amacı, niyeti veya gerçek kimliği "
+            "mevcut analiz sonuçlarında bulunmuyor."
+        )
+
+    if not answer_parts:
+        return None
+
+    return " ".join(answer_parts)
 
 
 def format_count_distribution(counts):
@@ -139,6 +240,14 @@ def answer_log_question(question, dashboard_data):
     if not dashboard_data:
         return "Henüz analiz edilmiş bir log verisi bulunmuyor."
 
+    local_answer = build_local_question_answer(
+        normalized_question,
+        dashboard_data,
+    )
+
+    if local_answer is not None:
+        return local_answer
+
     context = build_analysis_context(dashboard_data)
 
     prompt = (
@@ -172,6 +281,13 @@ def answer_log_question(question, dashboard_data):
             return "Yapay zekâ servisi boş bir cevap döndürdü."
 
         safe_answer = sanitize_incident_language(answer.strip())
+
+        if contains_unsupported_response_claim(safe_answer):
+            return (
+                "Yanıt mevcut analiz verisinin dışına çıktı. "
+                "IP adresinin amacı veya niyeti mevcut analiz "
+                "sonuçlarında bulunmuyor."
+            )
 
         if contains_forbidden_incident_language(safe_answer):
             return (
@@ -219,7 +335,7 @@ if __name__ == "__main__":
     ]
 
     print("Test 1: Veride bulunan soru")
-    print(answer_log_question("En riskli IP hangisi?", test_data))
+    print(answer_log_question("En riskli IP hangisi? Amacı ne olabilir?", test_data))
 
     print("---")
 

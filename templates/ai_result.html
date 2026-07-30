@@ -1,21 +1,49 @@
 <!DOCTYPE html>
-<html>
+<html lang="tr">
 <head>
-    <title>AI Aciklama</title>
+    <meta charset="UTF-8">
+    <title>AI Açıklama</title>
 </head>
+
 <body>
-    <h1>AI Incident Aciklamasi</h1>
+    <h1>AI Incident Açıklaması</h1>
 
     {% if incident %}
-    <p><strong>IP:</strong> {{ incident.ip }}</p>
-    <p><strong>Incident Type:</strong> {{ incident.incident_type }}</p>
-    <p><strong>Severity:</strong> {{ incident.severity }}</p>
-    <p><strong>Score:</strong> {{ incident.score }}</p>
+    <p>
+        <strong>IP:</strong>
+        {{ incident.ip }}
+    </p>
+
+    <p>
+        <strong>Incident Type:</strong>
+        {{ incident.incident_type }}
+    </p>
+
+    <p>
+        <strong>Severity:</strong>
+        {{ incident.severity }}
+    </p>
+
+    <p>
+        <strong>Score:</strong>
+        {{ incident.score }}
+    </p>
     {% endif %}
 
-    <h2>AI Aciklamasi</h2>
+    <h2>AI Açıklaması</h2>
+
     <p>{{ explanation }}</p>
 
-    <p><a href="/">Dashboard'a Don</a></p>
+    <p>
+        <em>
+            Bu açıklama AI tarafından üretilmiştir.
+            Analiz motorunun yerine geçmez ve kesin olay
+            doğrulaması sayılmaz.
+        </em>
+    </p>
+
+    <p>
+        <a href="/">Dashboard'a Dön</a>
+    </p>
 </body>
 </html>

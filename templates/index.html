@@ -1,24 +1,65 @@
 <!DOCTYPE html>
-<html>
+<html lang="tr">
 <head>
-    <meta http-equiv="refresh" content="10">
-    <title>Web Guvenligi Analizi - Dashboard</title>
+    <meta charset="UTF-8">
+    <title>Web Güvenliği Analizi - Dashboard</title>
+
     <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 24px;
+            background-color: #f5f5f5;
+            color: #222;
+        }
+
+        h1,
+        h2 {
+            margin-top: 0;
+        }
+
+        .page-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .panel {
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 18px;
+            margin-bottom: 20px;
+        }
+
         .severity-summary {
             display: flex;
+            flex-wrap: wrap;
             gap: 12px;
             margin-bottom: 20px;
         }
+
         .severity-card {
             padding: 10px 16px;
             border: 2px solid #333;
             border-radius: 6px;
             font-weight: bold;
         }
-        .severity-LOW { background-color: #d4edda; }
-        .severity-MEDIUM { background-color: #fff3cd; }
-        .severity-HIGH { background-color: #f8d7da; }
-        .severity-CRITICAL { background-color: #d9534f; color: white; }
+
+        .severity-LOW {
+            background-color: #d4edda;
+        }
+
+        .severity-MEDIUM {
+            background-color: #fff3cd;
+        }
+
+        .severity-HIGH {
+            background-color: #f8d7da;
+        }
+
+        .severity-CRITICAL {
+            background-color: #d9534f;
+            color: white;
+        }
 
         .badge {
             padding: 3px 8px;
@@ -26,68 +67,400 @@
             font-weight: bold;
             font-size: 0.9em;
         }
+
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        input,
+        select,
+        textarea,
+        button {
+            font: inherit;
+        }
+
+        input[type="file"],
+        select,
+        textarea {
+            padding: 8px;
+            border: 1px solid #999;
+            border-radius: 4px;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 90px;
+            box-sizing: border-box;
+            resize: vertical;
+        }
+
+        button {
+            padding: 8px 14px;
+            border: 1px solid #333;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:disabled {
+            cursor: wait;
+            opacity: 0.7;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+        }
+
+        th,
+        td {
+            border: 1px solid #aaa;
+            padding: 8px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        th {
+            background-color: #e9ecef;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        .status-message {
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border: 1px solid;
+        }
+
+        .status-success {
+            background-color: #d4edda;
+            border-color: #74a982;
+        }
+
+        .status-error {
+            background-color: #f8d7da;
+            border-color: #bb777d;
+        }
+
+        .status-info {
+            background-color: #d9edf7;
+            border-color: #78a7bd;
+        }
+
+        .chat-answer {
+            white-space: pre-wrap;
+            background-color: #f0f4f8;
+            border-left: 4px solid #466b8f;
+            padding: 12px;
+            margin-top: 14px;
+        }
+
+        .notice {
+            color: #555;
+            font-size: 0.95em;
+        }
+
+        .active-file {
+            font-weight: bold;
+            overflow-wrap: anywhere;
+        }
     </style>
 </head>
-<body>
-    <h1>Web Guvenligi Analizi - Incident Dashboard</h1>
 
-    <div class="severity-summary">
-        <div class="severity-card severity-LOW">LOW: {{ severity_counts.LOW }}</div>
-        <div class="severity-card severity-MEDIUM">MEDIUM: {{ severity_counts.MEDIUM }}</div>
-        <div class="severity-card severity-HIGH">HIGH: {{ severity_counts.HIGH }}</div>
-        <div class="severity-card severity-CRITICAL">CRITICAL: {{ severity_counts.CRITICAL }}</div>
+<body>
+    <div class="page-container">
+        <h1>Web Güvenliği Analizi - Incident Dashboard</h1>
+
+        {% if status_message %}
+        <div class="status-message status-{{ status_type }}">
+            {{ status_message }}
+        </div>
+        {% endif %}
+
+        <div class="panel">
+            <h2>Aktif Log Dosyası</h2>
+
+            <p class="active-file">{{ active_log_name }}</p>
+
+            <form
+                id="upload-form"
+                method="post"
+                action="/upload_log"
+                enctype="multipart/form-data"
+                onsubmit="setFormLoading(
+                    'upload-button',
+                    'Dosya yükleniyor...'
+                )"
+            >
+                <div class="form-row">
+                    <input
+                        type="file"
+                        name="log_file"
+                        accept=".log,.txt"
+                        required
+                    >
+
+                    <button
+                        id="upload-button"
+                        type="submit"
+                    >
+                        Log Dosyası Yükle
+                    </button>
+                </div>
+            </form>
+
+            <p class="notice">
+                Yalnızca .log ve .txt dosyaları kabul edilir.
+                Maksimum dosya boyutu {{ max_upload_size_label }}.
+                Yüklenen dosya içeriği sayfada HTML olarak
+                gösterilmez.
+            </p>
+        </div>
+
+        <div class="severity-summary">
+            <div class="severity-card severity-LOW">
+                LOW: {{ severity_counts.LOW }}
+            </div>
+
+            <div class="severity-card severity-MEDIUM">
+                MEDIUM: {{ severity_counts.MEDIUM }}
+            </div>
+
+            <div class="severity-card severity-HIGH">
+                HIGH: {{ severity_counts.HIGH }}
+            </div>
+
+            <div class="severity-card severity-CRITICAL">
+                CRITICAL: {{ severity_counts.CRITICAL }}
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2>Sonuçları Filtrele</h2>
+
+            <form method="get" action="/">
+                <div class="form-row">
+                    <label for="incident_type">
+                        Incident Type:
+                    </label>
+
+                    <select
+                        name="incident_type"
+                        id="incident_type"
+                    >
+                        <option value="">Tümü</option>
+
+                        {% for incident_type in incident_types %}
+                        <option
+                            value="{{ incident_type }}"
+                            {% if incident_type == selected_incident_type %}
+                            selected
+                            {% endif %}
+                        >
+                            {{ incident_type }}
+                        </option>
+                        {% endfor %}
+                    </select>
+
+                    <label for="severity">Severity:</label>
+
+                    <select
+                        name="severity"
+                        id="severity"
+                    >
+                        <option value="">Tümü</option>
+
+                        {% for severity in severities %}
+                        <option
+                            value="{{ severity }}"
+                            {% if severity == selected_severity %}
+                            selected
+                            {% endif %}
+                        >
+                            {{ severity }}
+                        </option>
+                        {% endfor %}
+                    </select>
+
+                    <button type="submit">Filtrele</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="panel">
+            <h2>Analiz Chatbotu</h2>
+
+            <p class="notice">
+                Chatbot yalnızca mevcut analiz sonuçlarını açıklar.
+                AI tarafından üretilen cevaplar analiz motorunun
+                yerine geçmez ve kesin olay doğrulaması sayılmaz.
+            </p>
+
+            <form
+                id="chat-form"
+                method="post"
+                action="/chat"
+                onsubmit="setFormLoading(
+                    'chat-button',
+                    'Yanıt bekleniyor...'
+                )"
+            >
+                <input
+                    type="hidden"
+                    name="incident_type"
+                    value="{{ selected_incident_type }}"
+                >
+
+                <input
+                    type="hidden"
+                    name="severity"
+                    value="{{ selected_severity }}"
+                >
+
+                <label for="question">
+                    Analiz sonuçları hakkında soru:
+                </label>
+
+                <textarea
+                    id="question"
+                    name="question"
+                    maxlength="{{ chatbot_max_question_length }}"
+                    placeholder="Örnek: En riskli IP hangisi?"
+                    required
+                >{{ question }}</textarea>
+
+                <button
+                    id="chat-button"
+                    type="submit"
+                >
+                    Chatbot'a Sor
+                </button>
+            </form>
+
+            {% if chatbot_answer is not none %}
+            <div class="chat-answer">
+                <strong>Chatbot cevabı:</strong>
+                {{ chatbot_answer }}
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="panel">
+            <h2>Incident Sonuçları</h2>
+
+            {% if data|length == 0 %}
+            <p>
+                Seçilen filtrelere uyan sonuç bulunamadı.
+            </p>
+            {% else %}
+            <div class="table-container">
+                <table>
+                    <tr>
+                        <th>IP</th>
+                        <th>Request Count</th>
+                        <th>Score</th>
+                        <th>Severity</th>
+                        <th>Incident Type</th>
+                        <th>Recommendation</th>
+                        <th>AI Açıklama</th>
+                    </tr>
+
+                    {% for row in data %}
+                    <tr>
+                        <td>{{ row.ip }}</td>
+                        <td>{{ row.request_count }}</td>
+                        <td>{{ row.score }}</td>
+
+                        <td>
+                            <span
+                                class="badge severity-{{ row.severity }}"
+                            >
+                                {{ row.severity }}
+                            </span>
+                        </td>
+
+                        <td>{{ row.incident_type }}</td>
+                        <td>{{ row.recommendation }}</td>
+
+                        <td>
+                            <form
+                                method="post"
+                                action="/ai_explain"
+                            >
+                                <input
+                                    type="hidden"
+                                    name="ip"
+                                    value="{{ row.ip }}"
+                                >
+
+                                <button type="submit">
+                                    AI ile Açıkla
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+            {% endif %}
+        </div>
     </div>
 
-    <form method="get" action="/">
-        <label for="incident_type">Incident Type:</label>
-        <select name="incident_type" id="incident_type">
-            <option value="">Tumu</option>
-            {% for incident_type in incident_types %}
-            <option value="{{ incident_type }}" {% if incident_type == selected_incident_type %}selected{% endif %}>{{ incident_type }}</option>
-            {% endfor %}
-        </select>
+    <script>
+        function setFormLoading(buttonId, loadingText) {
+            const button = document.getElementById(buttonId);
 
-        <label for="severity">Severity:</label>
-        <select name="severity" id="severity">
-            <option value="">Tumu</option>
-            {% for severity in severities %}
-            <option value="{{ severity }}" {% if severity == selected_severity %}selected{% endif %}>{{ severity }}</option>
-            {% endfor %}
-        </select>
+            if (!button) {
+                return;
+            }
 
-        <button type="submit">Filtrele</button>
-    </form>
+            button.disabled = true;
+            button.textContent = loadingText;
+        }
 
-    {% if data|length == 0 %}
-    <p>Secilen filtrelere uyan sonuc bulunamadi.</p>
-    {% else %}
-    <table border="1" cellpadding="6">
-        <tr>
-            <th>IP</th>
-            <th>Request Count</th>
-            <th>Score</th>
-            <th>Severity</th>
-            <th>Incident Type</th>
-            <th>Recommendation</th>
-            <th>AI Aciklama</th>
-        </tr>
-        {% for row in data %}
-        <tr>
-            <td>{{ row.ip }}</td>
-            <td>{{ row.request_count }}</td>
-            <td>{{ row.score }}</td>
-            <td><span class="badge severity-{{ row.severity }}">{{ row.severity }}</span></td>
-            <td>{{ row.incident_type }}</td>
-            <td>{{ row.recommendation }}</td>
-            <td>
-                <form method="post" action="/ai_explain">
-                    <input type="hidden" name="ip" value="{{ row.ip }}">
-                    <button type="submit">AI ile Acikla</button>
-                </form>
-            </td>
-        </tr>
-        {% endfor %}
-    </table>
-    {% endif %}
+        {% if chatbot_answer is none %}
+        const refreshDelay = {{
+            dashboard_refresh_milliseconds
+        }};
+
+        const refreshUrl = {{ refresh_url|tojson }};
+
+        function refreshDashboardWhenIdle() {
+            const activeElement = document.activeElement;
+            const activeTag = activeElement
+                ? activeElement.tagName
+                : "";
+
+            const editingTags = [
+                "INPUT",
+                "TEXTAREA",
+                "SELECT",
+            ];
+
+            if (editingTags.includes(activeTag)) {
+                window.setTimeout(
+                    refreshDashboardWhenIdle,
+                    refreshDelay
+                );
+
+                return;
+            }
+
+            window.location.href = refreshUrl;
+        }
+
+        window.setTimeout(
+            refreshDashboardWhenIdle,
+            refreshDelay
+        );
+        {% endif %}
+    </script>
 </body>
 </html>
