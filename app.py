@@ -15,6 +15,7 @@ from flask import (
     render_template,
     request,
     url_for,
+    send_from_directory,
 )
 from werkzeug.exceptions import RequestEntityTooLarge
 
@@ -250,6 +251,30 @@ def index():
     )
 
 
+@app.route("/react")
+def react_dashboard():
+    return send_from_directory(
+        os.path.join(PROJECT_ROOT, "frontend", "dist"),
+        "index.html",
+    )
+
+
+@app.route("/assets/<path:filename>")
+def react_assets(filename):
+    return send_from_directory(
+        os.path.join(PROJECT_ROOT, "frontend", "dist", "assets"),
+        filename,
+    )
+
+
+@app.route("/<path:filename>")
+def react_static(filename):
+    return send_from_directory(
+        os.path.join(PROJECT_ROOT, "frontend", "dist"),
+        filename,
+    )
+
+
 @app.route("/chat", methods=["POST"])
 def chat():
     question = request.form.get("question", "")
@@ -426,4 +451,4 @@ def api_upload():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5001, debug=False)
