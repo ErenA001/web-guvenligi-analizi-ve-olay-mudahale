@@ -1,137 +1,74 @@
-# 🛡️ Web Security Analysis and Incident Response (Internship Project)
+# Secure AI — Web Security Analysis & Incident Response
 
-🇹🇷 Turkish version: [README_TR.md](README_TR.md)
+Secure AI is a React + Flask security operations dashboard for Apache/Nginx and educational access logs. It performs IP-based incident classification, severity scoring, secure log ingestion, and analysis-grounded AI assistance.
 
-## 📌 About the Project
+🇹🇷 Full documentation: [README_TR.md](README_TR.md)
 
-This project is a **web security analysis and incident response** study developed as part of an internship process.
+![Secure AI dashboard](docs/screenshots/dashboard-desktop.png)
 
-The main purpose of the project is to analyze the basic security posture of a web application, detect suspicious activities through web server log records, and provide appropriate improvement or response recommendations for identified risks.
+## Hardened release
 
-This study focuses on both log-based security analysis and basic web application security checks. It is developed for educational purposes and represents a simplified model of real-world cybersecurity processes.
+- Session-based authentication with persistent secret management
+- Per-session upload workspaces and active-log isolation
+- SQLite-backed, multi-worker rate limiting for login, chat, and upload routes
+- Shared SQLite file-signature analysis cache with TTL and automatic invalidation across Gunicorn workers
+- Five-minute sliding-window brute-force and scanner detection
+- Apache Common/Combined, ISO timestamp, and legacy simple-log parsers
+- Atomic, validated `.log` / `.txt` uploads
+- Security headers, safe redirects, hardened cookies, and restricted AI output
+- Comprehensive standard-library test suite (**56/56 passing**)
 
----
+The NVIDIA NIM base URL, model selection, and `NVIDIA_API_KEY` integration remain unchanged.
 
-## 🎯 Project Purpose
+## Quick start
 
-The main purpose of this project is to simulate real-world cybersecurity processes at a basic level by:
+```bash
+cd web-guvenligi-analizi-ve-olay-mudahale
+./start.sh
+```
 
-- Analyzing possible security events in web-based systems
-- Detecting abnormal behavior through server log records
-- Identifying and classifying suspicious IP addresses
-- Interpreting HTTP status codes such as 401 Unauthorized and 403 Forbidden from a security perspective
-- Examining basic attack behaviors such as brute force attempts
-- Evaluating basic security controls of a web application
-- Identifying security weaknesses and suggesting improvements
-- Applying the basic logic of incident response
-- Improving technical awareness about log analysis and web security
+Open `http://localhost:5001` and use the initial credentials printed by the startup script. When no password is configured, credentials are generated in `.runtime/initial_credentials.txt` and the plaintext file is deleted after the first successful login.
 
----
+Preserve your existing `.env` when upgrading. A new installation can start from:
 
-## 🧠 Project Approach
+```bash
+cp .env.example .env
+```
 
-The project is based on two main approaches:
+## API
 
-### 1. Log-Based Security Analysis
+`/api/health` is public. The remaining endpoints require an authenticated browser session.
 
-In this phase, web server logs or sample log records are analyzed. IP addresses, HTTP requests, status codes, and failed access attempts are reviewed through log data.
+- `GET /api/health`
+- `GET /api/dashboard`
+- `POST /api/chat`
+- `POST /api/upload`
 
-This analysis helps to:
+Rate-limit responses use HTTP `429` and include `Retry-After`.
 
-- Examine traffic behavior of IP addresses
-- Detect failed login attempts
-- Identify suspicious request patterns
-- Observe unauthorized access attempts
-- Interpret possible attack behavior
+## Tests
 
-This section simulates the basic logic of a **Security Operations Center (SOC)**.
+```bash
+./run_tests.sh
+```
 
-### 2. Web Security Checks
+See [docs/reports/FINAL_TEST_REPORT.md](docs/reports/FINAL_TEST_REPORT.md) for the final verification summary.
 
-In later stages of the project, not only log records but also the basic security configuration of the web application will be evaluated.
+## Frontend development
 
-This includes checking:
+The delivery includes a ready production build. To rebuild from source, use Node.js 20.19+:
 
-- HTTPS usage
-- HTTP security headers
-- Cookie security
-- Login security
-- Access control
-- Error messages
-- Basic risks within the OWASP Top 10 scope
+```bash
+cd frontend
+npm install
+npm run lint
+npm run build
+```
 
-The goal is not only to read logs, but also to evaluate the basic strengths and weaknesses of a web application from a security perspective.
+## Developer
 
----
+Developed by **@JhreX**  
+Website: **jhrex.com.tr**  
+WhatsApp: **+44 7441 900754**
 
-## 🔐 Covered Security Topics
-
-This project focuses on the following basic web security topics:
-
-- Web application security fundamentals
-- HTTP protocol behavior analysis
-- Web server log analysis
-- IP-based traffic analysis
-- Brute force attack behavior
-- Unauthorized access attempts
-- Security interpretation of 401 and 403 status codes
-- Threat detection through log analysis
-- Basic web security checks
-- OWASP Top 10 awareness
-- Basic incident response logic
-
----
-
-## 🛠️ Technologies and Methods
-
-- Python 3 for data processing and analysis
-- Log parsing
-- IP-based traffic analysis
-- HTTP status code analysis
-- Git & GitHub version control
-- CLI-based development workflow
-- Basic cybersecurity analysis techniques
-- Web security checklist approach
-
----
-
-## 🚨 Incident Response Approach
-
-Suspicious activities detected during the project will not only be listed, but also evaluated using basic incident response logic.
-
-Example response and improvement recommendations include:
-
-- Monitoring suspicious IP addresses
-- Reviewing repeated failed login attempts
-- Applying rate limiting
-- Adding security headers
-- Fixing insecure configurations
-- Regularly reviewing log records
-- Improving risky areas
-
-With this approach, the project becomes not only a detection tool, but also a basic security analysis study that provides improvement suggestions.
-
----
-
-## 📈 Project Contribution
-
-Through this project:
-
-- The analysis of web security events is practiced
-- The importance of log data in security monitoring is understood
-- Suspicious behavior detection is simulated
-- The logic of IP-based traffic analysis is learned
-- The role of HTTP status codes in security analysis is understood
-- The importance of basic web application security controls is recognized
-- The basic logic of incident response is practiced
-- An entry-level perspective on real-world SOC and web security processes is gained
-
----
-
-## 📌 General Evaluation
-
-This study is designed as an entry-level practical project in **web security analysis, log analysis, and incident response**.
-
-The project is developed for educational and internship purposes. Therefore, the scenarios and analysis methods are kept at a basic level. The purpose is not to perform harmful activities, but to analyze the security posture of owned or authorized systems, identify risks, and develop improvement recommendations.
-
-In later stages, the project will be improved with attack detection, severity scoring, incident classification, incident response recommendations, and a web security checklist.
+> For educational and authorized security analysis only. Incident classifications are analytical indicators, not definitive proof of an attack.

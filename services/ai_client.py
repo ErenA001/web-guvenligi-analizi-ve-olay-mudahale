@@ -1,5 +1,4 @@
 import httpx
-from openai import OpenAI
 
 from scripts.config import (
     NVIDIA_API_TIMEOUT_SECONDS,
@@ -10,6 +9,11 @@ from scripts.config import (
 
 
 def create_nvidia_client(api_key):
+    # OpenAI istemcisi yalnızca AI çağrısı gerektiğinde yüklenir. Böylece
+    # API anahtarı olmadan çalışan yerel dashboard ve deterministik chatbot
+    # cevapları gereksiz bir bağımlılık hatası nedeniyle durmaz.
+    from openai import OpenAI
+
     http_client = httpx.Client(
         trust_env=False,
         timeout=httpx.Timeout(

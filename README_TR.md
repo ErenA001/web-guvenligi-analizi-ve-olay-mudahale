@@ -1,137 +1,217 @@
-# 🛡️ Web Güvenliği Analizi ve Olay Müdahale (Staj Projesi)
+# Secure AI — Web Güvenliği Analizi ve Olay Müdahale Sistemi
 
-## 📌 Proje Hakkında
+Secure AI; Apache/Nginx erişim loglarını ve basit eğitim loglarını analiz eden, IP bazlı incident sınıflandırması ve severity üreten React + Flask tabanlı bir güvenlik operasyon panelidir.
 
-Bu proje, staj süreci kapsamında geliştirilmiş bir **web güvenliği analizi ve olay müdahale (incident response)** çalışmasıdır.
+![Secure AI masaüstü görünümü](docs/screenshots/dashboard-desktop.png)
 
-Projenin temel amacı, bir web uygulamasının güvenlik durumunu temel seviyede analiz etmek, web sunucusu log kayıtları üzerinden şüpheli aktiviteleri tespit etmek ve tespit edilen risklere karşı uygun iyileştirme veya müdahale önerileri üretmektir.
+## Tamamlanan sağlamlaştırmalar
 
-Bu çalışma, hem log tabanlı güvenlik analizi hem de web uygulaması güvenlik kontrolleri üzerine odaklanmaktadır. Proje eğitim amacıyla geliştirilmiş olup, gerçek dünya siber güvenlik süreçlerinin basitleştirilmiş bir modelini temsil etmektedir.
+- **Kimlik doğrulama:** Dashboard, chatbot ve log yükleme uçları oturum açılmadan kullanılamaz.
+- **Çoklu kullanıcı izolasyonu:** Her tarayıcı oturumu için ayrı, rastgele çalışma alanı oluşturulur; yüklenen loglar ve aktif log durumu birbirine karışmaz.
+- **Rate limiting:** Giriş, chatbot ve log yükleme istekleri IP + oturum bazında SQLite üzerinde, Gunicorn worker'ları arasında ortak olarak sınırlandırılır.
+- **Paylaşımlı analiz cache'i:** Dosya yolu, inode, boyut, değişim zamanı ve analiz şema sürümüne göre SQLite cache uygulanır. Gunicorn worker'ları aynı sonucu paylaşır; dosya değiştiğinde analiz otomatik yenilenir.
+- **Zaman pencereli tespit:** Brute force ve scanner tespiti varsayılan olarak **5 dakikalık kayan pencere** kullanır.
+- **Genişletilmiş parser:** Apache Common/Combined, ISO zaman damgalı ve eski basit `IP METHOD PATH STATUS` biçimleri desteklenir.
+- **Güvenli yükleme:** Uzantı, boyut, UTF-8, ikili veri, log satırı ve çalışma alanı yolu doğrulanır; kayıt atomik yapılır.
+- **Otomatik testler:** Parser, detection, cache, authentication, rate limiting, API, upload ve session izolasyonu kapsanır.
 
----
+NVIDIA NIM bağlantısının adresi, modeli ve `NVIDIA_API_KEY` kullanımı değiştirilmemiştir.
 
-## 🎯 Projenin Amacı
+## Desteklenen log biçimleri
 
-Bu projenin temel amacı, gerçek dünya siber güvenlik süreçlerine benzer şekilde:
+Apache/Nginx tarzı:
 
-- Web tabanlı sistemlerde oluşabilecek güvenlik olaylarını analiz etmek
-- Sunucu log kayıtları üzerinden anormal davranışları tespit etmek
-- Şüpheli IP adreslerini belirlemek ve sınıflandırmak
-- 401 Unauthorized ve 403 Forbidden gibi HTTP durum kodlarını güvenlik açısından yorumlamak
-- Brute force gibi temel saldırı davranışlarını incelemek
-- Web uygulamasının temel güvenlik kontrollerini değerlendirmek
-- Güvenlik eksiklerini tespit ederek iyileştirme önerileri sunmak
-- Incident response (olay müdahale) mantığını temel seviyede uygulamak
-- Log analizi ve web güvenliği konusunda teknik farkındalık geliştirmek
+```text
+203.0.113.5 - - [04/Aug/2026:00:10:05 +0300] "POST /login HTTP/1.1" 401 123
+```
 
----
+ISO zaman damgalı:
 
-## 🧠 Proje Yaklaşımı
+```text
+2026-08-04T00:10:05+03:00 203.0.113.5 POST /login 401
+```
 
-Proje iki ana yaklaşım üzerine kurulmuştur:
+Basit eğitim biçimi:
 
-### 1. Log Tabanlı Güvenlik Analizi
+```text
+203.0.113.5 POST /login 401
+```
 
-Bu aşamada web sunucusu veya örnek olarak oluşturulan log kayıtları incelenir. Loglar üzerinden IP adresleri, HTTP istekleri, durum kodları ve başarısız erişim denemeleri analiz edilir.
+Zaman damgalı loglarda brute force ve scanner tespiti kayan zaman penceresiyle yapılır. Eski zaman damgasız loglar, geriye dönük uyumluluk için toplam eşik mantığıyla analiz edilir.
 
-Bu analiz sayesinde:
+## Hızlı kurulum — macOS / Linux
 
-- IP adreslerinin trafik davranışları incelenir
-- Başarısız giriş denemeleri tespit edilir
-- Şüpheli istek yoğunlukları belirlenir
-- Yetkisiz erişim girişimleri gözlemlenir
-- Olası saldırı davranışları hakkında yorum yapılır
+```bash
+cd web-guvenligi-analizi-ve-olay-mudahale
+./start.sh
+```
 
-Bu bölüm, temel bir **Security Operations Center (SOC)** mantığını simüle etmektedir.
+`start.sh` şunları otomatik yapar:
 
-### 2. Web Güvenlik Kontrolü
+1. Başka bilgisayardan kalmış uyumsuz `venv` klasörünü temizler.
+2. Python sanal ortamını oluşturur.
+3. Gerekli bağımlılıkları kurar.
+4. `.env` yoksa `.env.example` dosyasından oluşturur.
+5. Giriş bilgilerini ve kalıcı session secret değerini üretir.
+6. Uygulamayı Gunicorn ile başlatır.
 
-Projenin ilerleyen aşamalarında, yalnızca log kayıtları değil, web uygulamasının temel güvenlik yapılandırmaları da değerlendirilecektir.
+İlk çalıştırmada otomatik şifre üretilirse terminalde gösterilir ve şu dosyada tutulur:
 
-Bu kapsamda:
+```text
+.runtime/initial_credentials.txt
+```
 
-- HTTPS kullanımı
-- HTTP security headers
-- Cookie güvenliği
-- Login güvenliği
-- Erişim kontrolü
-- Hata mesajları
-- OWASP Top 10 kapsamındaki temel riskler
+Bu düz metin dosyası ilk başarılı girişten sonra otomatik silinir. Şifre hash'i ve session secret `.runtime` altında kalır; bu klasör Git tarafından izlenmez.
 
-gibi başlıklar incelenecektir.
+Tarayıcı:
 
-Bu sayede projenin amacı yalnızca logları okumak değil, aynı zamanda bir web uygulamasının güvenlik açısından güçlü ve zayıf yönlerini temel seviyede değerlendirmektir.
+```text
+http://localhost:5001
+```
 
----
+## Mevcut NVIDIA API anahtarını koruma
 
-## 🔐 Kapsanan Güvenlik Konuları
+Teslim paketinde gerçek `.env` dosyası ve API anahtarı bulunmaz. Mevcut projenizi güncelliyorsanız eski `.env` dosyanızı koruyun. Yeni kurulumda:
 
-Proje aşağıdaki temel web güvenliği konularına odaklanmaktadır:
+```env
+NVIDIA_API_KEY=YOUR_NVIDIA_API_KEY
+```
 
-- Web uygulama güvenliği temelleri
-- HTTP protokolü davranış analizi
-- Web sunucusu log analizi
-- IP bazlı trafik analizi
-- Brute force saldırı mantığı
-- Yetkisiz erişim girişimleri
-- 401 ve 403 durum kodlarının güvenlik açısından yorumlanması
-- Log analizi ile tehdit tespiti
-- Temel web güvenlik kontrolleri
-- OWASP Top 10 farkındalığı
-- Incident response süreçlerinin temel mantığı
+API anahtarı yoksa dashboard, dosya analizi ve deterministik chatbot cevapları çalışır. Yalnızca harici model gerektiren AI çağrıları devre dışı kalır.
 
----
+## Giriş ayarları
 
-## 🛠️ Kullanılan Teknolojiler ve Yöntemler
+Kolay yerel kullanım:
 
-- Python 3 ile veri işleme ve analiz
-- Log parsing (metin tabanlı veri analizi)
-- IP bazlı trafik inceleme
-- HTTP status code analizi
-- Git & GitHub versiyon kontrolü
-- CLI (komut satırı) tabanlı geliştirme yaklaşımı
-- Temel siber güvenlik analiz teknikleri
-- Web güvenlik kontrol listesi yaklaşımı
+```env
+APP_USERNAME=admin
+APP_PASSWORD=Guclu-Bir-Sifre-123!
+```
 
----
+Düz metin parola yerine hash kullanmak için:
 
-## 🚨 Olay Müdahale Yaklaşımı
+```bash
+source venv/bin/activate
+python -c "from werkzeug.security import generate_password_hash; print(generate_password_hash('Guclu-Bir-Sifre-123!'))"
+```
 
-Proje kapsamında tespit edilen şüpheli durumlar yalnızca listelenmekle kalmayacak, aynı zamanda temel olay müdahale mantığıyla değerlendirilecektir.
+Çıktıyı `.env` içine ekleyin:
 
-Örnek müdahale ve iyileştirme önerileri:
+```env
+APP_USERNAME=admin
+APP_PASSWORD=
+APP_PASSWORD_HASH=scrypt:...
+```
 
-- Şüpheli IP adresinin izlenmesi
-- Tekrarlanan başarısız giriş denemelerinin incelenmesi
-- Rate limiting uygulanması
-- Güvenlik headerlarının eklenmesi
-- Hatalı yapılandırmaların düzeltilmesi
-- Log kayıtlarının düzenli olarak takip edilmesi
-- Riskli alanların iyileştirilmesi
+HTTPS arkasında:
 
-Bu yaklaşım sayesinde proje, yalnızca tespit yapan bir araç değil, aynı zamanda temel seviyede öneri sunan bir güvenlik analizi çalışması haline getirilmektedir.
+```env
+SESSION_COOKIE_SECURE=1
+```
 
----
+## Varsayılan güvenlik limitleri
 
-## 📈 Projenin Katkısı
+| İşlem | Limit | Pencere |
+|---|---:|---:|
+| Giriş | 5 istek | 5 dakika |
+| Chatbot | 30 istek | 1 dakika |
+| Log yükleme | 6 istek | 5 dakika |
+| Brute force tespiti | 5 başarısız giriş | 5 dakika |
+| Scanner tespiti | 5 farklı path | 5 dakika |
 
-Bu proje sayesinde:
+Değerler `scripts/config.py` dosyasından değiştirilebilir.
 
-- Web güvenlik olaylarının nasıl analiz edildiği öğrenilmiştir
-- Log verilerinin güvenlik açısından önemi anlaşılmıştır
-- Şüpheli davranışların nasıl tespit edildiği simüle edilmiştir
-- IP bazlı trafik analizinin temel mantığı kavranmıştır
-- HTTP durum kodlarının güvenlik analizindeki rolü öğrenilmiştir
-- Web uygulamalarında temel güvenlik kontrollerinin önemi anlaşılmıştır
-- Incident response sürecinin temel mantığı kavranmıştır
-- Gerçek dünya SOC ve web güvenliği süreçlerine giriş seviyesi bir bakış sağlanmıştır
+## API
 
----
+Kimlik doğrulama cookie tabanlıdır. `/api/health` dışındaki API uçları aktif oturum ister.
 
-## 📌 Genel Değerlendirme
+```http
+GET /api/health
+GET /api/dashboard
+POST /api/chat
+POST /api/upload
+```
 
-Bu çalışma, siber güvenlik alanında özellikle **web güvenliği analizi, log analizi ve olay müdahale süreçlerine giriş seviyesinde bir uygulama** olarak tasarlanmıştır.
+Chatbot örneği:
 
-Proje, eğitim ve staj amacıyla geliştirilmiştir. Bu nedenle kullanılan senaryolar ve analiz yöntemleri temel seviyede tutulmuştur. Amaç, zararlı faaliyet gerçekleştirmek değil; sahip olunan veya izin verilen sistemlerde güvenlik durumunu incelemek, riskleri fark etmek ve iyileştirme önerileri geliştirmektir.
+```http
+POST /api/chat
+Content-Type: application/json
 
-İlerleyen aşamalarda proje; saldırı tespiti, severity scoring, incident classification, incident response önerileri ve web güvenlik kontrol listesi gibi başlıklarla geliştirilecektir.
+{
+  "question": "En riskli IP hangisi?",
+  "history": []
+}
+```
+
+Log yükleme:
+
+```http
+POST /api/upload
+Content-Type: multipart/form-data
+
+log_file=<dosya>
+```
+
+Limit aşımında `429 Too Many Requests` ve `Retry-After` başlığı döner. Oturum yoksa `401 Unauthorized` döner.
+
+## Testler
+
+```bash
+./run_tests.sh
+```
+
+Test kapsamı:
+
+- Apache, ISO ve eski log parser'ı
+- URL-encoded path traversal
+- Kayan pencere brute force/scanner tespiti
+- Query string kaynaklı scanner yanlış pozitifleri
+- Analiz cache hit/invalidation/TTL
+- SQLite rate limiter ve çoklu worker paylaşımı
+- Otomatik ve tanımlı kimlik doğrulama
+- Güvenli yükleme ve workspace sınırları
+- İki eşzamanlı oturumda log izolasyonu
+- API authentication, rate limiting ve security headers
+- Chatbot konuşma geçmişi ve güvenli cevap kuralları
+
+Nihai doğrulamada **56/56 otomatik test** ve iki-worker gerçek Gunicorn HTTP akışı başarılıdır. Ayrıntılar `docs/reports/FINAL_TEST_REPORT.md` dosyasındadır.
+
+## Frontend geliştirme
+
+Final paket hazır `frontend/dist` içerir; ilk çalıştırmada Node.js gerekmez. Kaynak React kodunu değiştirmek için Node.js 20.19+ kullanın:
+
+```bash
+cd frontend
+npm install
+npm run lint
+npm run build
+```
+
+## Güvenlik notları
+
+- Session cookie: `HttpOnly`, `SameSite=Strict`; HTTPS ortamında `Secure` etkinleştirilebilir.
+- Session secret kalıcı ve rastgele üretilir; birden fazla Gunicorn worker aynı secret değerini kullanır.
+- Açık yönlendirme engellenir; `next` yalnızca yerel yolları kabul eder.
+- `Content-Security-Policy`, `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy` ve `Permissions-Policy` uygulanır.
+- HSTS yalnızca HTTPS isteğinde eklenir.
+- Proxy başlıkları güvenilir proxy yapılandırması olmadan kabul edilmez; istemci IP spoofing'i engellenir.
+- Yüklenen dosyalar kullanıcı oturumuna özel klasörde `0600` izinleriyle saklanır.
+- AI çıktıları incident sınıflandırmasını kesin saldırı kanıtı gibi sunmaması için filtrelenir.
+
+## Teknolojiler
+
+- Python 3.11+
+- Flask 3
+- Gunicorn
+- SQLite
+- React 19 / Vite
+- NVIDIA NIM / Llama 3.1
+
+## Geliştirici
+
+Developed by **@JhreX**  
+Web: **jhrex.com.tr**  
+WhatsApp: **+44 7441 900754**
+
+> Eğitim ve yalnızca yetkili sistemlerde güvenlik analizi amacıyla kullanılmalıdır. Incident sınıflandırmaları tek başına gerçek bir saldırının kesin kanıtı değildir.

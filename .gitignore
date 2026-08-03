@@ -1,23 +1,53 @@
-# Python cache files
+# Python cache and tooling
 __pycache__/
-*.pyc
+*.py[cod]
+.coverage
+.pytest_cache/
+.mypy_cache/
 
 # Virtual environments
 venv/
 .venv/
 
-# macOS files
-.DS_Store
-
-# Ignore real log files but keep sample log
-logs/*.log
-!logs/sample_access.log
-
-# Uploaded log files
-uploads/
-
-# Generated reports
-reports/
+# Runtime secrets, sessions and limiter database
+.runtime/
 
 # Environment variables
 .env
+.env.*
+!.env.example
+
+# Uploaded logs and generated reports
+uploads/
+reports/
+
+# Keep the demonstration log
+logs/*.log
+!logs/sample_access.log
+
+# Frontend dependencies; production build is intentionally included
+frontend/node_modules/
+
+# Local backups and temporary files
+*.pre-hardening
+.chatbot-*-backup-*/
+*.tmp
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+# Local AI/developer tool configuration may contain API keys
+opencode.json
+!opencode.example.json
+
+# Private keys and local databases
+*.pem
+*.key
+*.p12
+*.pfx
+*.sqlite3
+*.sqlite3-shm
+*.sqlite3-wal
+*.db

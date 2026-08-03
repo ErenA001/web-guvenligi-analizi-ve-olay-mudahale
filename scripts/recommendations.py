@@ -5,15 +5,15 @@ def get_recommendation(incident_type):
     if incident_type == "BRUTE_FORCE":
         return "IP engellenmeli (block)"
     elif incident_type == "UNAUTHORIZED_ACCESS":
-        return "Rate limiting uygulanmali"
+        return "Rate limiting uygulanmalı"
     elif incident_type == "FORBIDDEN_ACCESS":
-        return "Erisim yetkileri gozden gecirilmeli"
+        return "Erişim yetkileri gözden geçirilmeli"
     elif incident_type == "PATH_TRAVERSAL_ATTEMPT":
-        return "Acil inceleme gerekli, dizin disina cikma denemesi tespit edildi"
+        return "Acil inceleme gerekli, dizin dışına çıkma denemesi tespit edildi"
     elif incident_type == "SCANNER_ACTIVITY":
-        return "IP izlenmeli, path taramasi tespit edildi (potansiyel recon)"
+        return "IP izlenmeli, path taraması tespit edildi (potansiyel recon)"
     elif incident_type == "SUSPICIOUS_ACTIVITY":
-        return "Izlemeye devam edilmeli (monitoring)"
+        return "İzlemeye devam edilmeli (monitoring)"
     else:
         return "Aksiyon gerekmiyor"
 
